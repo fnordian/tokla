@@ -1,0 +1,21 @@
+@(loginForm: Form[String])(implicit flash: Flash, request: Request[AnyContent])
+
+@import helper._
+
+
+@main("Log in", "login") {
+
+    @flashmessage()
+
+    <div>
+
+
+        <a class="btn-auth btn-google large" href="@routes.Login.loginWithGoogle">
+            Sign in with <b>google</b>
+        </a>
+
+
+
+    </div>
+
+}

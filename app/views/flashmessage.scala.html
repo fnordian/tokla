@@ -1,0 +1,7 @@
+@()(implicit flash: Flash)
+
+
+
+@if(!flash.isEmpty) {
+    <div>@flash.get("message")</div>
+}

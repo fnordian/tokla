@@ -1,0 +1,27 @@
+@(tokenForm: Form[String])(implicit flash: Flash, request: Request[AnyContent])
+
+@import helper._
+
+@main("Create a new token", "createToken") {
+    <div class="col-lg-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">Name your token...</div>
+            <div class="panel-body">
+
+            @form(routes.Application.createToken) {
+                <div class="input-group">
+
+                    @inputText(tokenForm("name"), 'class -> "form-control")
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="submit" value="Create Token!">create new token!</button>
+                    </span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+}
+
+
+}

@@ -1,0 +1,24 @@
+@(message: String)(implicit flash: Flash, request: Request[AnyContent])
+
+
+@main("Welcome to tok.la", "home") {
+
+
+    <div class="jumbotron">
+        <div class="container">
+            <h1>Manage a shared resource between multiple parties?</h1>
+            <p>
+            Then tok.la is for you!
+            It's one simple tool that helps you organizing.</p>
+            <p><a class="btn btn-primary btn-lg">Learn more</a>
+            <a class="btn btn-primary btn-lg" href="@routes.Application.createTokenForm">Create a token</a></p>
+        </div>
+    </div>
+
+
+
+    <div>
+
+
+    </div>
+}

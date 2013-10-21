@@ -1,0 +1,80 @@
+@(token: Token)(implicit flash: Flash, request: Request[AnyContent])
+
+@import java.text.SimpleDateFormat
+
+@import helper._
+
+
+@main(token.name, "token") {
+
+    <div class="col-lg-9">
+
+        <div class="well">
+            <h1>@token.name</h1>
+            @if(!token.claimedBy.isEmpty) {
+                <p>claimed since @{
+                    new SimpleDateFormat().format(token.claimTime)
+                }</p>
+                <p>
+                @{
+                    val applicants = token.sortedApplicants
+
+                    if(applicants.size > 0) {
+                        "next: " +
+                        applicants(0).applicantName
+
+                    } else {
+                        ""
+                    }
+                }
+                </p>
+                <p>@token.applicants.size waiting</p>
+
+            }
+
+        </div>
+
+
+    </div>
+
+    <div class="col-lg-3">
+
+    @if(token.claimedBy.isEmpty) {
+        @form(routes.Application.claimToken(token.id)) {
+
+            <p>This token is not claimed at the moment</p>
+
+            <button type="submit" class="btn btn-default navbar-btn">claim this token!</button>
+
+
+        }
+    } else {
+        @if(!token.claimedBy.isInstanceOf && request.session.get("username").getOrElse("") == token.claimedBy) {
+            @form(routes.Application.releaseToken(token.id)) {
+
+                <p>This token is claimed by <span class="label label-default">you.</span></p>
+
+                <button type="submit" class="btn btn-default navbar-btn">release this token!</button>
+
+            }
+        } else {
+
+            <p>This token is claimed by <span class="label label-default">@token.claimedBy</span></p>
+
+            @if(token.applicants.exists((a: TokenApplicant) => {
+                a.applicantName == request.session.get("username").getOrElse("")
+            })) {
+                @form(routes.Application.deenqueueForToken(token.id)) {
+                    <button type="submit" class="btn btn-default navbar-btn">get out of the queue!</button>
+                }
+            } else {
+                @form(routes.Application.enqueueForToken(token.id)) {
+                    <button type="submit" class="btn btn-default navbar-btn">enqueue for this token!</button>
+                }
+            }
+
+
+        }
+    }
+    </div>
+}

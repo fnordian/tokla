@@ -1,0 +1,28 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET         /                           controllers.Application.index
+GET         /index                      controllers.Application.index
+
+
+GET         /createToken                controllers.Application.createTokenForm
+POST        /createToken                controllers.Application.createToken
+GET         /token/:id                  controllers.Application.showToken(id: String)
+POST        /token/:id/claim            controllers.Application.claimToken(id: String)
+POST        /token/:id/release          controllers.Application.releaseToken(id: String)
+POST        /token/:id/enqueue          controllers.Application.enqueueForToken(id: String)
+POST        /token/:id/deenqueue        controllers.Application.deenqueueForToken(id: String)
+
+
+
+# Map static resources from the /public folder to the /assets URL path
+GET         /assets/*file               controllers.Assets.at(path="/public", file)
+
+GET         /openid/callback            controllers.Login.openIDCallback
+GET         /openid/login               controllers.Login.login(postLoginPath = "")
+GET         /openid/login/*path         controllers.Login.login(path)
+POST        /openid/login               controllers.Login.loginPost
+GET         /openid/google              controllers.Login.loginWithGoogle
+GET         /openid/logout              controllers.Login.logout
