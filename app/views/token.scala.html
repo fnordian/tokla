@@ -1,4 +1,4 @@
-@(token: Token)(implicit flash: Flash, request: Request[AnyContent])
+@(token: Token, tokenPictureForm: Form[String])(implicit flash: Flash, request: Request[AnyContent])
 
 @import java.text.SimpleDateFormat
 
@@ -7,74 +7,234 @@
 
 @main(token.name, "token") {
 
-    <div class="col-lg-9">
+<div class="page-header"/>
 
-        <div class="well">
-            <h1>@token.name</h1>
-            @if(!token.claimedBy.isEmpty) {
-                <p>claimed since @{
-                    new SimpleDateFormat().format(token.claimTime)
-                }</p>
-                <p>
-                @{
-                    val applicants = token.sortedApplicants
+<div class="row">
 
-                    if(applicants.size > 0) {
-                        "next: " +
-                        applicants(0).applicantName
+<div class="col-lg-9">
 
-                    } else {
-                        ""
-                    }
-                }
-                </p>
-                <p>@token.applicants.size waiting</p>
+    <div class="well">
+        <h1>@token.name</h1>
+        @if(!token.claimedBy.isEmpty) {
+        <p>claimed since @{
+            new SimpleDateFormat().format(token.claimTime)
+            }</p>
 
+        <p>
+            @{
+            val applicants = token.sortedApplicants
+
+            if(applicants.size > 0) {
+            "next: " +
+            applicants(0).applicantName
+
+            } else {
+            ""
             }
+            }
+        </p>
 
+        <p>@token.applicants.size waiting</p>
+        }
+        <div>
+            @if(!token.picurl.isEmpty) {
+            <img src="@token.picurl" class="tokenimage">
+            }
         </div>
-
-
     </div>
+    <div class="dialog">
 
-    <div class="col-lg-3">
+        <form onsubmit="sendChatLine(); return false;" class="form-inline">
+            <div id="chatbox" style="overflow: auto; max-height: 15em;">
+                <ul id="chatMessageList" class="chatList">
 
-    @if(token.claimedBy.isEmpty) {
-        @form(routes.Application.claimToken(token.id)) {
+                </ul>
+            </div>
+            <script>
+                var lastMessageTimeStamp = 0;
 
-            <p>This token is not claimed at the moment</p>
+                function getLastMessageTimeStamp() {
+                    return lastMessageTimeStamp;
+                }
 
-            <button type="submit" class="btn btn-default navbar-btn">claim this token!</button>
+                function newChatLine(sender, message, timestamp) {
+                    if (lastMessageTimeStamp < timestamp) {
+                        lastMessageTimeStamp = timestamp;
+                    }
 
+                    var senderElement = $("<small></small>");
+                    senderElement.text(sender);
+                    var messageElement = $("<p></p>");
+                    messageElement.text(message);
+                    senderElement.append(messageElement)
+
+                    $("#chatMessageList").append($("<li></li>").html(senderElement));
+                    $("#chatbox").scrollTop($("#chatbox")[0].scrollHeight);
+                }
+                function sendChatLine() {
+
+                    $.ajax({
+                        type: "POST",
+                        url: "@routes.Comet.chatSay(token.id)",
+                        data: { "message": $("#chatLine").val()},
+                        dataType: "json"
+                    });
+                    $("#chatLine").val("");
+                }
+            </script>
+            <div class="input-group">
+                <input type="text" name="message" id="chatLine" class="form-control" autocomplete="off"
+                       placeholder="write a comment" onsubmit="sendChatLine()">
+
+                <div class="input-group-btn">
+                    <button type="submit" class="btn btn-default btn-wide btn-primary">send</button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<div class="col-lg-3">
+    <script>
+        function postWithoutData(url) {
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: {},
+                dataType: "json"
+            });
+            location.reload();
+        }
+        function claimToken() {
+            postWithoutData("@routes.Application.claimToken(token.id)");
+        }
+        function releaseToken() {
+            postWithoutData("@routes.Application.releaseToken(token.id)");
+        }
+        function rememberToken() {
+            postWithoutData("@routes.Application.rememberToken(token.id)");
+        }
+        function forgetToken() {
+            postWithoutData("@routes.Application.forgetToken(token.id)");
+        }
+        function configureToken() {
 
         }
-    } else {
-        @if(!token.claimedBy.isInstanceOf && request.session.get("username").getOrElse("") == token.claimedBy) {
-            @form(routes.Application.releaseToken(token.id)) {
 
-                <p>This token is claimed by <span class="label label-default">you.</span></p>
+    </script>
 
-                <button type="submit" class="btn btn-default navbar-btn">release this token!</button>
+    <ul class="nav nav-stacked span2">
 
-            }
+        @if(token.claimedBy.isEmpty) {
+        <li>
+            <p>This token is not claimed at the moment</p>
+
+            <a href="#" class="btn btn-primary" onclick="claimToken()">claim this token!</a>
+        </li>
+
+
         } else {
+        <li>
 
+            @if(!token.claimedBy.isInstanceOf && request.session.get("username").getOrElse("") == token.claimedBy) {
+
+            <p>This token is claimed by <span class="label label-default">you.</span></p>
+
+            <a href="#" onclick="releaseToken()" class="btn btn-primary">release this token!</a>
+
+
+        </li>
+        <li>
+            <!--@form(routes.Application.setTokenPicture(token.id)) {-->
+
+
+            <!--<div class="input-group">
+                @inputText(tokenPictureForm("picurl"), 'class -> "form-control")
+                            <span class="input-group-btn">
+                                <button class="btn btn-default" type="submit" value="Create Token!">ok!</button>
+                            </span>
+            </div>-->
+
+
+        </li>
+
+        <li class="dropdown" id="menuLogin">
+            <a class="btn btn-default" href="#" data-toggle="dropdown" id="navLogin">configure token</a>
+            <div class="dropdown-menu" style="padding:17px; margin-top:2px !important;">
+                @form(routes.Application.setTokenPicture(token.id)) {
+                    @inputText(tokenPictureForm("picurl"), 'class -> "form-control")
+                            <span class="input-group-btn">
+                                <button class="btn btn-default" type="submit" value="">set token picture</button>
+                            </span>
+                }
+            </div>
+        </li>
+        <!--}-->
+
+        } else {
+        <li>
             <p>This token is claimed by <span class="label label-default">@token.claimedBy</span></p>
 
             @if(token.applicants.exists((a: TokenApplicant) => {
-                a.applicantName == request.session.get("username").getOrElse("")
+            a.applicantName == request.session.get("username").getOrElse("")
             })) {
-                @form(routes.Application.deenqueueForToken(token.id)) {
-                    <button type="submit" class="btn btn-default navbar-btn">get out of the queue!</button>
-                }
+            <a href="#" onclick="releaseToken()">leave queue</a>
             } else {
-                @form(routes.Application.enqueueForToken(token.id)) {
-                    <button type="submit" class="btn btn-default navbar-btn">enqueue for this token!</button>
-                }
+            <a href="#" onclick="releaseToken()">enqueue for this token</a>
             }
+        </li>
 
 
         }
+        }
+
+        <!--<p>Token you remember appear on the tok.la main page</p>-->
+        <li>
+
+
+            @if(token.associatedUsers.exists((u) => request.session.get("username").getOrElse("") == u.id)) {
+            <a href="#" class="btn btn-default" onclick="forgetToken()">forget token</a>
+
+            } else {
+            <a href="#" class="btn btn-primary" onclick="rememberToken()">remember token</a>
+            }
+        </li>
+
+    </ul>
+
+</div>
+
+
+</div>
+
+<script type="text/javascript">
+    var cometMessage = function (event) {
+        console.log('Received event: ' + event)
     }
-    </div>
+
+    var poll = function () {
+        $.ajax({
+            url: '/tokenEvents/@token.id/' + getLastMessageTimeStamp(),
+            success: function (data) {
+
+                if (data) {
+                    data = JSON.parse(data);
+                    if (data["messages"]) {
+                        data["messages" ].forEach(function (message) {
+                            newChatLine(message["sender"], message["message"], message["timeStamp"])
+                        })
+                    }
+                }
+
+            },
+            error: function () {
+                console.log("error");
+            },
+            dataType: "html", complete: poll, timeout: 30000 });
+    }
+    poll();
+</script>
+
+
 }

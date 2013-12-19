@@ -1,3 +1,4 @@
+import java.sql.SQLException
 import models.db.TokenDb
 import org.squeryl.adapters.H2Adapter
 import org.squeryl.internals.DatabaseAdapter
@@ -16,7 +17,12 @@ object Global extends GlobalSettings {
 
     //Logger.info(DB.getDataSource().getConnection.toString)
 
-    val session = new org.squeryl.Session(DB.getDataSource().getConnection(), adapter);
+    //val session = new org.squeryl.Session(DB.getDataSource().getConnection(), adapter);
+    val session = try {
+      Session.create(DB.getDataSource().getConnection(), adapter);
+    } catch {
+      case e: SQLException => getSession(adapter, application)
+    }
 
     session
   }
@@ -50,8 +56,6 @@ object Global extends GlobalSettings {
       session.close
       session.unbindFromCurrentThread
     })
-
-    Logger.info("after routing")
 
     ret
   }

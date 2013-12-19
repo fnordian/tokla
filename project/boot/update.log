@@ -187,7 +187,7 @@ WARN:   http://scala-tools.org/repo-snapshots/org/scala-tools/sbt/sbt_2.8.1/0.13
 Nbr of module to sort : 0
 	resolved ivy file produced in /home/marcus/.ivy2/cache/resolved-org.scala-tools.sbt-boot-app-1.0.xml
 :: downloading artifacts ::
-:: resolution report :: resolve 2004ms :: artifacts dl 0ms
+:: resolution report :: resolve 1853ms :: artifacts dl 0ms
 WARN: 	::::::::::::::::::::::::::::::::::::::::::::::
 WARN: 	::          UNRESOLVED DEPENDENCIES         ::
 WARN: 	::::::::::::::::::::::::::::::::::::::::::::::
@@ -196,7 +196,7 @@ WARN: 	::::::::::::::::::::::::::::::::::::::::::::::
 
 Nbr of module to sort : 0
 	report for org.scala-tools.sbt#boot-app;1.0 default produced in /home/marcus/.ivy2/cache/org.scala-tools.sbt-boot-app-default.xml
-	resolve done (2004ms resolve - 0ms download)
+	resolve done (1853ms resolve - 0ms download)
 
 :: problems summary ::
 :::: WARNINGS

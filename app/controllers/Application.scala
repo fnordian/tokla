@@ -10,7 +10,11 @@ import models.db.TokenDb
 import org.squeryl.{PrimitiveTypeMode, SessionFactory}
 import scala.Predef._
 import java.util
+import controllers.mail.MailNotification
+import PrimitiveTypeMode._
 import models.Token
+import models.TokenApplicant
+import models.TokenUserReference
 
 
 object Application extends Controller with LoggedIn with DbHelper {
@@ -23,14 +27,33 @@ object Application extends Controller with LoggedIn with DbHelper {
     "submit" -> nonEmptyText
   )
 
+  val tokenPictureForm = Form(
+    "picurl" -> nonEmptyText
+  )
+
 
   val schema = TokenDb
 
-  def index = Action {
+  def index = IsAuthenticated({
+    username => implicit request =>
+      withDbSession({
+        implicit session =>
+          val user = TokenDb.users.lookup(username) match {
+            case Some(user) => user
+            case none => Login.ensureUserDbEntry(User(username))
+          }
+          Ok(views.html.indexLoggedin(user))
+      })
+  }, {
     implicit request =>
-
       Ok(views.html.index("Your new application is ready."))
+  })
+
+  def learn = Action {
+    implicit request =>
+      Ok(views.html.index("Your new application is ready.")).flashing("message" -> "Tutorial comming soon. Thank you for your interest.")
   }
+
 
   def createTokenForm = IsAuthenticated {
     username => implicit request =>
@@ -72,7 +95,7 @@ object Application extends Controller with LoggedIn with DbHelper {
           Logger.info("" + token)
           Logger.info(request.session.get("username").get + " " + (token.claimedBy == request.session.get("username").get))
 
-          Ok(views.html.token(token))
+          Ok(views.html.token(token, tokenPictureForm))
       })
   }
 
@@ -90,7 +113,7 @@ object Application extends Controller with LoggedIn with DbHelper {
 
           token.applicants.find((a: TokenApplicant) => {
             a.applicantName == username
-          }).foreach( (a: TokenApplicant) => schema.applicants.delete(a.id))
+          }).foreach((a: TokenApplicant) => schema.applicants.delete(a.id))
 
 
           Redirect(routes.Application.showToken(id))
@@ -162,6 +185,48 @@ object Application extends Controller with LoggedIn with DbHelper {
 
   }
 
+  def setTokenPicture(id: String) = IsAuthenticated {
+    username => implicit request =>
+      import schema._
+      import PrimitiveTypeMode._
+      withDbSession({
+        implicit session =>
+          val token = tokens.get(id)
+
+          Logger.info("setting token picture " + id + " username " + username + " " + token.claimedBy + " " + token.claimedBy.equals(username))
+          tokenPictureForm.bindFromRequest.fold(
+            errors => BadRequest(views.html.token(token, tokenPictureForm)),
+            picurl => {
+
+              Logger.info("token about to get a new picture")
+
+              if ((token.claimedBy == null || token.claimedBy.isEmpty || !token.claimedBy.equals(username))) {
+                Redirect(routes.Application.showToken(id)).flashing("message" -> "token not claimed by you")
+              } else {
+                val newToken = token.copy(picurl = picurl)
+
+                Logger.info("token has got a new picture")
+                tokens.update(newToken)
+
+                Redirect(routes.Application.showToken(id))
+
+
+              }
+            })
+      })
+
+  }
+
+  def disclaimer = Action {
+    implicit request =>
+      Ok(views.html.disclaimer())
+  }
+
+  def robotstxt = Action {
+    implicit request =>
+      Ok(views.txt.robots())
+  }
+
   def releaseToken(id: String) = IsAuthenticated {
     username => implicit request =>
       import schema._
@@ -185,7 +250,9 @@ object Application extends Controller with LoggedIn with DbHelper {
 
             val nextClaimer = if (applicants.size > 0) {
               schema.applicants.delete(applicants(0).id)
+              MailNotification.sendTokenNotification(token.copy(claimedBy = applicants(0).applicantName))
               applicants(0).applicantName
+
             } else {
               ""
             }
@@ -200,6 +267,47 @@ object Application extends Controller with LoggedIn with DbHelper {
             Redirect(routes.Application.showToken(id))
 
           }
+      })
+
+  }
+
+
+  def rememberToken(id: String) = IsAuthenticated {
+    username => implicit request =>
+      import schema._
+      import PrimitiveTypeMode._
+
+      Logger.info("remembering token " + id + " username " + username)
+
+      withDbSession({
+        implicit session =>
+          val tokenUserRereference = TokenUserReference(id, username)
+          userReferences.insertOrUpdate(tokenUserRereference)
+
+          Redirect(routes.Application.showToken(id))
+      })
+
+  }
+
+  def forgetToken(id: String) = IsAuthenticated {
+    username => implicit request =>
+      import schema._
+      import PrimitiveTypeMode._
+
+      Logger.info("forgetting token " + id + " username " + username)
+
+      withDbSession({
+        implicit session =>
+
+          val tokenUserRereference = TokenUserReference(id, username)
+          Logger.info("forgetting token " + tokenUserRereference)
+          Logger.info("forgetting token " + tokenUserRereference.id)
+          Logger.info("forgetting token " + userReferences)
+
+
+          userReferences.delete(tokenUserRereference.id)
+
+          Redirect(routes.Application.showToken(id))
       })
 
   }

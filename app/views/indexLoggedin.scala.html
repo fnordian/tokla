@@ -1,0 +1,58 @@
+@(user: User)(implicit flash: Flash, request: Request[AnyContent])
+@import java.text.SimpleDateFormat
+@import de.bripkens.gravatar.DefaultImage
+@import de.bripkens.gravatar.Rating
+@import de.bripkens.gravatar.Gravatar
+
+
+@main("Welcome to tok.la", "home") {
+
+    <div class="page-header" />
+
+    <div class="row">
+
+        <div class="col-lg-9">
+            <h1>Token overview</h1>
+
+            @if(user.associatedTokens.size > 0) {
+                <p>These are your remembered tokens:</p>
+            } else {
+                <p>No tokens remembered yet.</p>
+
+            }
+
+            <ul class="nav nav-pills nav-stacked">
+            @for(token <- user.associatedTokens) {
+                <li>
+                    <a href="@routes.Application.showToken(token.id)">@token.name, claimed by
+                        @if(token.claimedBy.isEmpty) {
+                            nobody
+                        } else {
+                            @token.claimedBy since @{new SimpleDateFormat().format(token.claimTime)}
+                        }
+                    </a>
+                </li>
+            }
+            </ul>
+        </div>
+
+
+        <div class="col-lg-3">
+            <div style="text-align : center;  margin-left: auto; margin-right: auto;">
+                <p>
+                <img src="@{
+                    new Gravatar().setSize(100)
+                            .setHttps(false)
+                            .setRating(Rating.PARENTAL_GUIDANCE_SUGGESTED)
+                            .setStandardDefaultImage(DefaultImage.WAVATAR)
+                            .getUrl(request.session.get("username").get);
+                }">
+                </p>
+                <p>@request.session.get("username")</p>
+            </div>
+        </div>
+
+
+    </div>
+
+}

@@ -5,10 +5,17 @@
 
 @main("Log in", "login") {
 
+    <div class="page-header" />
+
     @flashmessage()
 
     <div>
 
+        <h1>Who are you?</h1>
+        <p>
+            tok.la uses google login for authenticating users. It's easier for us and definitely easier for you.
+            Click the "Sign in with google"-button, authenticate with google and your back in a second.
+        </p>
 
         <a class="btn-auth btn-google large" href="@routes.Login.loginWithGoogle">
             Sign in with <b>google</b>
