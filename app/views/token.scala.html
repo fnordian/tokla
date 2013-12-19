@@ -5,7 +5,9 @@
 @import helper._
 
 
+
 @main(token.name, "token") {
+<script src='@routes.Assets.at("javascripts/tokenevents.js")' type="text/javascript"></script>
 
 <div class="page-header"/>
 
@@ -42,44 +44,32 @@
             }
         </div>
     </div>
-    <div class="dialog">
-
+    <div class="dialog"  ng-controller="TokenChatCtrl" ng-init="chat = {lines : [], tokenBaseUrl : '/tokenEvents/@token.id/' }">
         <form onsubmit="sendChatLine(); return false;" class="form-inline">
-            <div id="chatbox" style="overflow: auto; max-height: 15em;">
-                <ul id="chatMessageList" class="chatList">
 
-                </ul>
-            </div>
+            <ul id="chatMessageList" class="chatList"  style="max-height:300px; overflow:auto" scroll-if>
+                <li ng-repeat="chatMessage in chat.lines" scroll-item>
+                    <small>{{chatMessage.sender}}</small>
+                    <p>{{chatMessage.message}}</p>
+                </li>
+            </ul>
+
+
             <script>
-                var lastMessageTimeStamp = 0;
-
-                function getLastMessageTimeStamp() {
-                    return lastMessageTimeStamp;
-                }
-
-                function newChatLine(sender, message, timestamp) {
-                    if (lastMessageTimeStamp < timestamp) {
-                        lastMessageTimeStamp = timestamp;
-                    }
-
-                    var senderElement = $("<small></small>");
-                    senderElement.text(sender);
-                    var messageElement = $("<p></p>");
-                    messageElement.text(message);
-                    senderElement.append(messageElement)
-
-                    $("#chatMessageList").append($("<li></li>").html(senderElement));
-                    $("#chatbox").scrollTop($("#chatbox")[0].scrollHeight);
-                }
+                var sendingChatLine = 0;
                 function sendChatLine() {
-
-                    $.ajax({
-                        type: "POST",
-                        url: "@routes.Comet.chatSay(token.id)",
-                        data: { "message": $("#chatLine").val()},
-                        dataType: "json"
-                    });
-                    $("#chatLine").val("");
+                    if (sendingChatLine == 0) {
+                        sendingChatLine = 1;
+                        $.ajax({
+                            type: "POST",
+                            url: "@routes.Comet.chatSay(token.id)",
+                            data: { "message": $("#chatLine").val()},
+                            dataType: "json",
+                            success: function() { sendingChatLine = 0; },
+                            error: function() { sendingChatLine = 0; }
+                        });
+                        $("#chatLine").val("");
+                    }
                 }
             </script>
             <div class="input-group">
@@ -145,20 +135,6 @@
 
 
         </li>
-        <li>
-            <!--@form(routes.Application.setTokenPicture(token.id)) {-->
-
-
-            <!--<div class="input-group">
-                @inputText(tokenPictureForm("picurl"), 'class -> "form-control")
-                            <span class="input-group-btn">
-                                <button class="btn btn-default" type="submit" value="Create Token!">ok!</button>
-                            </span>
-            </div>-->
-
-
-        </li>
-
         <li class="dropdown" id="menuLogin">
             <a class="btn btn-default" href="#" data-toggle="dropdown" id="navLogin">configure token</a>
             <div class="dropdown-menu" style="padding:17px; margin-top:2px !important;">
@@ -170,8 +146,6 @@
                 }
             </div>
         </li>
-        <!--}-->
-
         } else {
         <li>
             <p>This token is claimed by <span class="label label-default">@token.claimedBy</span></p>
@@ -208,33 +182,6 @@
 
 </div>
 
-<script type="text/javascript">
-    var cometMessage = function (event) {
-        console.log('Received event: ' + event)
-    }
-
-    var poll = function () {
-        $.ajax({
-            url: '/tokenEvents/@token.id/' + getLastMessageTimeStamp(),
-            success: function (data) {
-
-                if (data) {
-                    data = JSON.parse(data);
-                    if (data["messages"]) {
-                        data["messages" ].forEach(function (message) {
-                            newChatLine(message["sender"], message["message"], message["timeStamp"])
-                        })
-                    }
-                }
-
-            },
-            error: function () {
-                console.log("error");
-            },
-            dataType: "html", complete: poll, timeout: 30000 });
-    }
-    poll();
-</script>
 
 
 }
