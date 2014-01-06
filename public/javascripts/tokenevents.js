@@ -25,17 +25,36 @@ app.factory('myService', function($http) {
 app.controller('TokenChatCtrl', function( myService,$scope, $timeout) {
 
     var lastMessageTimeStamp = 0;
+
+    var gravatar = function(sender) {
+        return 'http://www.gravatar.com/avatar/' + CryptoJS.MD5(sender) + '?s=64&r=pg&d=wavatar';
+    }
     var newChatLine = function(sender, message, timeStamp) {
         console.log("da new chatline");
         if (!$scope.chat.lines) {
             $scope.chat.lines = Array();
         }
-        $scope.chat.lines.push({sender: sender, message: message, timeStamp: timeStamp});
+        while ($scope.chat.lines.length > 49) {
+            $scope.chat.lines.shift();
+        }
+        $scope.chat.lines.push({sender: sender, message: message, timeStamp: parseInt(timeStamp), avatar: gravatar(sender)});
         if (lastMessageTimeStamp < timeStamp) {
             lastMessageTimeStamp = timeStamp;
             console.log("new timestamp " + lastMessageTimeStamp);
         }
     };
+    var updateToken = function(tokenUpdate) {
+        $scope.token.applicants = tokenUpdate.applicants;
+        $scope.token.claimedBy = tokenUpdate.claimedBy;
+        $scope.token.claimTime = tokenUpdate.claimTime;
+        $scope.token.remembered = tokenUpdate.remembered;
+        $scope.token.picurl = tokenUpdate.picurl;
+        if (lastMessageTimeStamp < tokenUpdate.timeStamp) {
+            lastMessageTimeStamp = tokenUpdate.timeStamp;
+            console.log("new timestamp " + lastMessageTimeStamp);
+        }
+
+    }
 
     $scope.$watch("chat.tokenBaseUrl", function(){
 
@@ -46,14 +65,25 @@ app.controller('TokenChatCtrl', function( myService,$scope, $timeout) {
                 if (data["messages"]) {
                     console.log("data messages: " + data["messages"]);
                     data["messages" ].forEach(function (message) {
+                        if (message == null) return;
                         console.log("tok");
                         newChatLine(message["sender"], message["message"], message["timeStamp"])
                     })
                 }
+                if (data["tokenUpdates"]) {
+                    data["tokenUpdates" ].forEach(function (tokenUpdate) {
+                        if (tokenUpdate == null) return;
+                        console.log("tok");
+                        updateToken(tokenUpdate);
+                    })
+                }
 
                 $scope.data = data;
-                $timeout(tick, 1000);
+                $timeout(tick, 600);
 
+            },function(response) {
+                console.log("error?");
+                $timeout(tick, 10000);
             });
         })();
     });

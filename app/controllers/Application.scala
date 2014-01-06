@@ -185,38 +185,6 @@ object Application extends Controller with LoggedIn with DbHelper {
 
   }
 
-  def setTokenPicture(id: String) = IsAuthenticated {
-    username => implicit request =>
-      import schema._
-      import PrimitiveTypeMode._
-      withDbSession({
-        implicit session =>
-          val token = tokens.get(id)
-
-          Logger.info("setting token picture " + id + " username " + username + " " + token.claimedBy + " " + token.claimedBy.equals(username))
-          tokenPictureForm.bindFromRequest.fold(
-            errors => BadRequest(views.html.token(token, tokenPictureForm)),
-            picurl => {
-
-              Logger.info("token about to get a new picture")
-
-              if ((token.claimedBy == null || token.claimedBy.isEmpty || !token.claimedBy.equals(username))) {
-                Redirect(routes.Application.showToken(id)).flashing("message" -> "token not claimed by you")
-              } else {
-                val newToken = token.copy(picurl = picurl)
-
-                Logger.info("token has got a new picture")
-                tokens.update(newToken)
-
-                Redirect(routes.Application.showToken(id))
-
-
-              }
-            })
-      })
-
-  }
-
   def disclaimer = Action {
     implicit request =>
       Ok(views.html.disclaimer())
@@ -272,45 +240,6 @@ object Application extends Controller with LoggedIn with DbHelper {
   }
 
 
-  def rememberToken(id: String) = IsAuthenticated {
-    username => implicit request =>
-      import schema._
-      import PrimitiveTypeMode._
-
-      Logger.info("remembering token " + id + " username " + username)
-
-      withDbSession({
-        implicit session =>
-          val tokenUserRereference = TokenUserReference(id, username)
-          userReferences.insertOrUpdate(tokenUserRereference)
-
-          Redirect(routes.Application.showToken(id))
-      })
-
-  }
-
-  def forgetToken(id: String) = IsAuthenticated {
-    username => implicit request =>
-      import schema._
-      import PrimitiveTypeMode._
-
-      Logger.info("forgetting token " + id + " username " + username)
-
-      withDbSession({
-        implicit session =>
-
-          val tokenUserRereference = TokenUserReference(id, username)
-          Logger.info("forgetting token " + tokenUserRereference)
-          Logger.info("forgetting token " + tokenUserRereference.id)
-          Logger.info("forgetting token " + userReferences)
-
-
-          userReferences.delete(tokenUserRereference.id)
-
-          Redirect(routes.Application.showToken(id))
-      })
-
-  }
 
 }
 

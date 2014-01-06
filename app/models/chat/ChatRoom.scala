@@ -8,14 +8,15 @@ import scala.concurrent.duration._
 
 import akka.util.Timeout
 import play.Logger
+import models.Token
 
 
 case class RequestMessagesSince(sender: Actor, timeStamp: Long)
-case class SayMessage(chatMessage: ChatMessage)
+case class SayMessage(chatMessage: ChatEvent)
 
 class ChatRoom {
 
-  var messages = Seq[ChatMessage]()
+  var messages = Seq[ChatEvent]()
   var listeners = Seq[Actor]()
 
   def messagesSince(timeStamp: Long) = {
@@ -27,16 +28,21 @@ class ChatRoom {
       react {
         case RequestMessagesSince(sender, timeStamp) => {
           messagesSince(timeStamp) match {
-            case messages: Seq[ChatMessage] if messages.length > 0 =>
+            case messages: Seq[ChatEvent] if messages.length > 0 =>
               sender ! messages
             case _ =>
               listeners = listeners :+ sender
           }
         }
-        case SayMessage(chatMessage: ChatMessage) => {
-          messages = messages :+ chatMessage
-          Logger.info("informing all listeners")
-          for (listener <- listeners) listener ! Seq(chatMessage)
+        case SayMessage(chatMessage: ChatEvent) => {
+          if (messages.size > 0 && messages.last.timeStamp >= chatMessage.timeStamp) chatMessage.timeStamp = messages.last.timeStamp + 1
+          messages = (messages :+ chatMessage).takeRight(100)
+
+          Logger.info("informing all listeners about " + chatMessage)
+          for (listener <- listeners) {
+            Logger.info("informing")
+            listener ! Seq(chatMessage)
+          }
           Logger.info("done informing all listeners")
           listeners = Seq()
         }
@@ -47,6 +53,11 @@ class ChatRoom {
   def sayMessage(chatMessage: ChatMessage) {
     coordinator ! SayMessage(chatMessage)
   }
+
+  def reportTokenUpdate(tokenUpdate: TokenUpdate) {
+    coordinator ! SayMessage(tokenUpdate)
+  }
+
 }
 
 
@@ -59,7 +70,7 @@ class ChatRoomListener(chatRoom: ChatRoom, lastTimeListenTimeStamp: Long) {
           chatRoom.coordinator ! request
           reply {
             receiveWithin(10000) {
-              case response: Seq[ChatMessage] => {
+              case response: Seq[ChatEvent] => {
 
                 Logger.info("got response")
                 response
@@ -72,7 +83,7 @@ class ChatRoomListener(chatRoom: ChatRoom, lastTimeListenTimeStamp: Long) {
     }
   }
 
-  def getMessages : Future[Seq[ChatMessage]] = {
+  def getMessages : Future[Seq[ChatEvent]] = {
 
     future {
 

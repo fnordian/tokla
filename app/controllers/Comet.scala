@@ -47,48 +47,64 @@ object Comet extends Controller with LoggedIn {
     })
   }
 
-  def chatMessageToCometMessages(messages: Seq[ChatMessage]) = {
+  def chatMessageToCometMessages(messages: Seq[ChatEvent], username: String) = {
 
 
     JsObject(Seq("success" -> JsBoolean(true), "messages" -> JsArray(
-      messages.map(chatMessage =>
-        JsObject(Seq(
-          "sender" -> JsString(chatMessage.sender),
-          "message" -> JsString(chatMessage.message),
-          "timeStamp" -> JsNumber(chatMessage.timeStamp)
-        ))
+      messages.map(chatEvent => {
+        chatEvent match {
+          case chatMessage: ChatMessage =>
+
+            JsObject(Seq(
+              "sender" -> JsString(chatMessage.sender),
+              "message" -> JsString(chatMessage.message),
+              "timeStamp" -> JsNumber(chatMessage.timeStamp)
+            ))
+          case _ => JsNull
+        }
+      }
       )
 
-    ))
+    ), "tokenUpdates" -> JsArray(
+      messages.map(chatEvent => {
+        chatEvent match {
+          case tokenUpdate: TokenUpdate =>
+
+            JsObject(Seq(
+              "applicants" -> JsArray(tokenUpdate.applicants.map(a => JsString(a.applicantName)).toSeq),
+              "claimedBy" -> JsString(tokenUpdate.claimedBy),
+              "claimTime" -> JsNumber(tokenUpdate.claimTime),
+              "timeStamp" -> JsNumber(tokenUpdate.timeStamp),
+              "picurl" -> JsString(tokenUpdate.picurl),
+              "remembered" -> JsBoolean(tokenUpdate.associatedUsers.exists(u => u.id.equals(username)))
+            ))
+          case _ => JsNull
+        }
+      }
+      )
+
     )
 
-    /*
-        if (messages.length > 0) {
-          for (chatMessage <- messages) {
-            sb.append( """newChatLine('""" + Html(chatMessage.sender) + """', '""" + Html(chatMessage.message) + """', """ + chatMessage.timeStamp + """);""")
-          }
-        } else {
-          sb.append( """console.log('""" + "no messages" + """')""")
-        }
+    )
+    )
 
-        Html(sb.toString())
-    */
   }
 
-  def tokenEvents(id: String, lastMessageTimeStamp: Long) = Action.async {
+  def tokenEvents(id: String, lastMessageTimeStamp: Long) = IsAuthenticatedAsync({
+    username => implicit request =>
 
-    val room = tokenChatRoom(id)
+      val room = tokenChatRoom(id)
 
-    val messages = new ChatRoomListener(room, lastMessageTimeStamp).getMessages
+      val messages = new ChatRoomListener(room, lastMessageTimeStamp).getMessages
 
 
-    //val messagesHtml = messages.value.get.get.map( message => chatMessageToCometMessge(message))
-    val messagesHtml = messages.map {
-      value =>
-        Ok(chatMessageToCometMessages(value))
-    }
+      //val messagesHtml = messages.value.get.get.map( message => chatMessageToCometMessge(message))
+      val messagesHtml = messages.map {
+        value =>
+          Ok(chatMessageToCometMessages(value, username))
+      }
 
-    messagesHtml
+      messagesHtml
 
     /*
     val events = Enumerator("kiki", "foo", "bar")
@@ -96,7 +112,10 @@ object Comet extends Controller with LoggedIn {
     future {
       Ok.chunked(events >>> Enumerator.eof &> toCometMessage)
     }*/
+  }, {
+    implicit request => Ok("unauthenticated")
   }
+  )
 
   def chatSay(id: String) = IsAuthenticated {
     username => implicit request =>
@@ -112,4 +131,5 @@ object Comet extends Controller with LoggedIn {
         }
       )
   }
+
 }

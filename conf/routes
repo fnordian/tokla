@@ -17,14 +17,20 @@ POST        /token/:id/claim            controllers.Application.claimToken(id: S
 POST        /token/:id/release          controllers.Application.releaseToken(id: String)
 POST        /token/:id/enqueue          controllers.Application.enqueueForToken(id: String)
 POST        /token/:id/deenqueue        controllers.Application.deenqueueForToken(id: String)
-POST        /token/:id/picture          controllers.Application.setTokenPicture(id: String)
-POST        /token/:id/remember         controllers.Application.rememberToken(id: String)
-POST        /token/:id/forget           controllers.Application.forgetToken(id: String)
+
 
 GET         /tokenEvents/:id/:timestamp controllers.Comet.tokenEvents(id: String, timestamp: Long)
 POST        /token/:id/chatSay          controllers.Comet.chatSay(id: String)
 
 GET         /json/token/:id             controllers.JSONApplication.showToken(id: String)
+POST        /json/token/:id/claim       controllers.JSONApplication.claimToken(id: String)
+POST        /json/token/:id/release     controllers.JSONApplication.releaseToken(id: String)
+POST        /json/token/:id/enqueue     controllers.JSONApplication.enqueueForToken(id: String)
+POST        /json/token/:id/deenqueue   controllers.JSONApplication.deenqueueForToken(id: String)
+POST        /json/token/:id/remember    controllers.JSONApplication.rememberToken(id: String)
+POST        /json/token/:id/forget      controllers.JSONApplication.forgetToken(id: String)
+POST        /json/token/:id/picture     controllers.JSONApplication.setTokenPicture(id: String)
+
 
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file               controllers.Assets.at(path="/public", file)

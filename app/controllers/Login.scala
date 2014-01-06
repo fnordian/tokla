@@ -10,6 +10,7 @@ import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 import models.db.TokenDb
 import models.User
+import scala.concurrent._
 
 trait LoggedIn extends Controller {
   def IsAuthenticated(f: => String => Request[AnyContent] => Result): Action[AnyContent] = {
@@ -43,6 +44,24 @@ trait LoggedIn extends Controller {
       }
     })
   }
+
+  def IsAuthenticatedAsync(f: => String => Request[AnyContent] => Future[SimpleResult], elseFun: => Request[AnyContent] => SimpleResult) =
+    Action.async( request => {
+
+        val username: String = request.session.get("username").getOrElse("")
+        if (username.isEmpty) {
+          future {
+            elseFun(request)
+          }
+        } else {
+          Logger.info("Authorized access to " + request.uri + " , for user " + username)
+          f(username)(request)
+        }
+      }
+    )
+
+
+
 
 }
 
@@ -90,85 +109,6 @@ import play.api.http.Writeable
 import play.api.data.Form
 
 
-object Comet extends Controller with LoggedIn {
-
-  val toCometMessage = Enumeratee.map[String] { data =>
-    Html("""console.log('""" + data + """')""")
-  }
-
-  val chatForm = Form(
-    "message" -> nonEmptyText
-  )
-
-
-  val tokenChatRooms : ConcurrentMap[String, ChatRoom] = new ConcurrentHashMap[String, ChatRoom]()
-
-  def tokenChatRoom(id: String): ChatRoom = {
-    tokenChatRooms.synchronized({
-      if (!tokenChatRooms.containsKey(id)) {
-        val newRoom = new ChatRoom()
-        tokenChatRooms.put(id, newRoom)
-        newRoom
-      } else {
-        tokenChatRooms.get(id)
-      }
-    })
-  }
-
-  def chatMessageToCometMessages(messages: Seq[ChatMessage]) = {
-
-    val sb: StringBuilder = new StringBuilder()
-
-
-
-    if(messages.length > 0) {
-      for (chatMessage <- messages) {
-        sb.append("""newChatLine('""" + chatMessage.sender + """', '""" + chatMessage.message + """')""")
-      }
-    } else {
-      sb.append("""console.log('""" + "no messages" + """')""")
-    }
-
-    Html(sb.toString())
-
-  }
-
-  def tokenEvents(id: String) = Action.async {
-
-    val room = tokenChatRoom(id)
-
-    val messages = new ChatRoomListener(room, 0).getMessages
-
-
-    //val messagesHtml = messages.value.get.get.map( message => chatMessageToCometMessge(message))
-    val messagesHtml = messages.map {
-      value =>
-        Ok(chatMessageToCometMessages(value))
-    }
-
-    messagesHtml
-
-    /*
-    val events = Enumerator("kiki", "foo", "bar")
-
-    future {
-      Ok.chunked(events >>> Enumerator.eof &> toCometMessage)
-    }*/
-  }
-
-  def chatSay(id: String) = IsAuthenticated {
-      username => implicit request =>
-        chatForm.bindFromRequest.fold(
-          errors => BadRequest("bad form"),
-          message => {
-            val room = tokenChatRoom(id)
-            room.sayMessage(new ChatMessage("", message))
-            Ok("")
-
-          }
-        )
-  }
-}
 
 
   def loginPost = Action {
@@ -203,6 +143,8 @@ object Comet extends Controller with LoggedIn {
           .map(info =>
           withDbSession({
             implicit session =>
+
+              Logger.info("openid id " + info.id)
 
               try {
                 ensureUserDbEntry(User(id = info.attributes.get("email").get, firstname = info.attributes.get("firstname").getOrElse(""), lastname = info.attributes.get("lastname").getOrElse("")))

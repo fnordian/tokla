@@ -10,188 +10,198 @@
 
 <div class="page-header"/>
 
-<div class="row">
+<div class="row" ng-init="
+                    username='@request.session.get("username")';
+                    token.claimedBy='@token.claimedBy';
+                    token.applicants= [
+                        @if(token.sortedApplicants.size > 0) {
+                        @token.sortedApplicants.map{applicant =>
+                            @{Html("'") += Html(applicant.applicantName) += Html("'")}
+}.reduceLeft((e1, e2) => e1 += Html(", ") += e2)
+}
+];
+                    token.picurl='@token.picurl';
+                    token.claimTime='@token.claimTime';
+                    token.remembered='@{token.associatedUsers.exists((u) => request.session.get("username").getOrElse("") == u.id)}'
 
-    <div class="col-lg-9">
+">
 
-        <div class="well">
-            <h1>@token.name</h1>
-            @if(!token.claimedBy.isEmpty) {
-            <p>claimed since @{
-                new SimpleDateFormat().format(token.claimTime)
-                }</p>
+<div class="col-lg-9">
 
-            <p>
-                @{
-                val applicants = token.sortedApplicants
+    <div class="well">
+        <h1>@token.name</h1>
 
-                if(applicants.size > 0) {
-                "next: " +
-                applicants(0).applicantName
+        <p ng-hide="!token.claimTime || !token.claimedBy">claimed since {{token.claimTime | date:'yyyy-MM-dd HH:mm:ss Z'}}</p>
 
-                } else {
-                ""
-                }
-                }
-            </p>
+        <p ng-hide="token.applicants.length == 0">
+            {{token.applicants[0]}}
+        </p>
 
-            <p>@token.applicants.size waiting</p>
-            }
-            <div>
-                @if(!token.picurl.isEmpty) {
-                <img src="@token.picurl" class="tokenimage">
-                }
-            </div>
+        <p ng-hide="token.applicants.length == 0">{{token.applicants.length}} waiting</p>
+
+        <div>
+            <img ng-hide="!token.picurl" ng-src="{{token.picurl}}" class="tokenimage" />
         </div>
-        <div ng-init="showChat = 0">
-            <a href="#fakelink" class="btn btn-xs btn-default btn-block" ng-click="showChat = 1"
-               ng-hide="showChat==1"><span class="glyphicon glyphicon-chevron-down pull-left"></span>show
-                discussion<span class="fui-chat pull-right"></span></a>
-            <a href="#fakelink" class="btn btn-xs btn-default btn-block" ng-click="showChat = 0"
-               ng-hide="showChat==0"><span class="glyphicon glyphicon-chevron-up pull-left"></span>hide discussion<span
-                    class="fui-chat pull-right"></span></a>
+    </div>
+    <div ng-init="showChat = 1">
+        <a href="#fakelink" class="btn btn-xs btn-default btn-block" ng-click="showChat = 1"
+           ng-hide="showChat==1"><span class="glyphicon glyphicon-chevron-down pull-left"></span>show
+            discussion<span class="fui-chat pull-right"></span></a>
+        <a href="#fakelink" class="btn btn-xs btn-default btn-block" ng-click="showChat = 0"
+           ng-hide="showChat==0"><span class="glyphicon glyphicon-chevron-up pull-left"></span>hide discussion<span
+                class="fui-chat pull-right"></span></a>
 
-            <div class="dialog animate-hide" ng-controller="TokenChatCtrl"
-                 ng-init="chat = {lines : [], tokenBaseUrl : '/tokenEvents/@token.id/' }" ng-hide="showChat==0">
-                <form onsubmit="sendChatLine(); return false;" class="form-inline">
+        <div class="dialog animate-hide" ng-controller="TokenChatCtrl"
+             ng-init="chat = {lines : [], tokenBaseUrl : '/tokenEvents/@token.id/' }" ng-hide="showChat==0">
+            <form onsubmit="sendChatLine(); return false;" class="form-inline">
 
-                    <ul id="chatMessageList" class="chatList" style="max-height:300px; overflow:auto" scroll-if>
-                        <li ng-repeat="chatMessage in chat.lines" scroll-item>
-                            <small>{{chatMessage.sender}}</small>
-                            <p>{{chatMessage.message}}</p>
-                        </li>
-                    </ul>
+                <ul id="chatMessageList" class="chatList" style="max-height:300px; overflow:auto" scroll-if>
+                    <li style="margin-left:-40px" ng-repeat="chatMessage in chat.lines" scroll-item>
+                        <table><tr>
+                            <td>
+                                <img ng-src="{{chatMessage.avatar}}">
+                            </td>
+                            <td>
+
+                                <div class="popover right"  style="display:block;position: relative; max-width: 1000px;">
+                                    <div class="arrow"></div>
+                                    <h3 class="popover-title">{{chatMessage.timeStamp | date:'yyyy-MM-dd HH:mm:ss Z'}} - {{chatMessage.sender}}</h3>
+                                    <div class="popover-content">
+                                        {{chatMessage.message}}
+                                    </div>
+                                </div>
+
+                            </td>
+                        </tr></table>
+                    </li>
+                </ul>
 
 
-                    <script>
-                        var sendingChatLine = 0;
-                        function sendChatLine() {
-                            if (sendingChatLine == 0) {
-                                sendingChatLine = 1;
-                                $.ajax({
-                                    type: "POST",
-                                    url: "@routes.Comet.chatSay(token.id)",
-                                    data: { "message": $("#chatLine").val()},
-                                    dataType: "json",
-                                    success: function () {
-                                        sendingChatLine = 0;
-                                    },
-                                    error: function () {
-                                        sendingChatLine = 0;
-                                    }
-                                });
-                                $("#chatLine").val("");
-                            }
+                <script>
+                    var sendingChatLine = 0;
+                    function sendChatLine() {
+                        if (sendingChatLine == 0) {
+                            sendingChatLine = 1;
+                            $.ajax({
+                                type: "POST",
+                                url: "@routes.Comet.chatSay(token.id)",
+                                data: { "message": $("#chatLine").val()},
+                                dataType: "json",
+                                success: function () {
+                                    sendingChatLine = 0;
+                                },
+                                error: function () {
+                                    sendingChatLine = 0;
+                                }
+                            });
+                            $("#chatLine").val("");
                         }
-                    </script>
-                    <div class="input-group">
-                        <input type="text" name="message" id="chatLine" class="form-control" autocomplete="off"
-                               placeholder="write a comment" onsubmit="sendChatLine()">
+                    }
+                </script>
+                <div class="input-group">
+                    <input type="text" name="message" id="chatLine" class="form-control" autocomplete="off"
+                           placeholder="write a comment" onsubmit="sendChatLine()">
 
-                        <div class="input-group-btn">
-                            <button type="submit" class="btn btn-default btn-wide btn-primary">send</button>
-                        </div>
+                    <div class="input-group-btn">
+                        <button type="submit" class="btn btn-default btn-wide btn-primary">send</button>
                     </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="col-lg-3">
+    <script>
+        function post(url, data) {
+            $.ajax({
+                type: "POST",
+                url: url,
+                processData: false,
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json"
+            });
+//            location.reload();
+        }
+        function claimToken() {
+            post("@routes.JSONApplication.claimToken(token.id)", {});
+        }
+        function releaseToken() {
+            post("@routes.JSONApplication.releaseToken(token.id)", {});
+        }
+        function rememberToken() {
+            post("@routes.JSONApplication.rememberToken(token.id)", {});
+        }
+        function forgetToken() {
+            post("@routes.JSONApplication.forgetToken(token.id)", {});
+        }
+        function configureToken() {
+
+        }
+        function leaveTokenQueue() {
+            post("@routes.JSONApplication.deenqueueForToken(token.id)", {});
+        }
+        function enqueueForToken() {
+            post("@routes.JSONApplication.enqueueForToken(token.id)", {});
+        }
+        function setPictureUrl(url) {
+            post("@routes.JSONApplication.setTokenPicture(token.id)", { "pictureUrl" : url });
+        }
+
+    </script>
+
+    <ul class="nav nav-stacked span2">
+
+
+        <li ng-hide="token.claimedBy">
+            <p>This token is not claimed at the moment</p>
+
+            <a href="#" class="btn btn-primary" onclick="claimToken()">claim this token!</a>
+        </li>
+
+
+
+        <li ng-hide="token.claimedBy != '@request.session.get("username").getOrElse("")'">
+            <p>This token is claimed by <span class="label label-default" >you.</span></p>
+            <a href="#" onclick="releaseToken()" class="btn btn-primary">release this token!</a>
+        </li>
+        <li ng-hide="token.claimedBy != '@request.session.get("username").getOrElse("")'"  class="dropdown" id="menuLogin">
+            <a class="btn btn-default" href="#" data-toggle="dropdown" id="navLogin">configure token</a>
+
+            <div class="dropdown-menu" style="padding:17px; margin-top:2px !important;">
+
+                <form>
+                    <input type="text" class="form-control" id="picurltext"/>
+
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" value="" onclick="setPictureUrl($('#picurltext').val())">set token picture</button>
+                    </span>
 
                 </form>
             </div>
-        </div>
-    </div>
+        </li>
 
-    <div class="col-lg-3">
-        <script>
-            function postWithoutData(url) {
-                $.ajax({
-                    type: "POST",
-                    url: url,
-                    data: {},
-                    dataType: "json"
-                });
-                location.reload();
-            }
-            function claimToken() {
-                postWithoutData("@routes.Application.claimToken(token.id)");
-            }
-            function releaseToken() {
-                postWithoutData("@routes.Application.releaseToken(token.id)");
-            }
-            function rememberToken() {
-                postWithoutData("@routes.Application.rememberToken(token.id)");
-            }
-            function forgetToken() {
-                postWithoutData("@routes.Application.forgetToken(token.id)");
-            }
-            function configureToken() {
+        <li>
+            <p ng-hide="!token.claimedBy || token.claimedBy == '@request.session.get("username").getOrElse("")'">This token is claimed by <span class="label label-default">{{token.claimedBy}}</span></p>
 
-            }
+            <a href="#" class="btn btn-default" ng-hide="token.applicants.indexOf(username) == -1"  onclick="leaveTokenQueue()">leave queue</a>
+            <a href="#" class="btn btn-primary" ng-hide="token.applicants.indexOf(username) != -1 || !token.claimedBy ||  token.claimedBy == '@request.session.get("username").getOrElse("")'" onclick="enqueueForToken()">enqueue for this token</a>
 
-        </script>
-
-        <ul class="nav nav-stacked span2">
-
-            @if(token.claimedBy.isEmpty) {
-            <li>
-                <p>This token is not claimed at the moment</p>
-
-                <a href="#" class="btn btn-primary" onclick="claimToken()">claim this token!</a>
-            </li>
+        </li>
 
 
-            } else {
-            <li>
 
-                @if(!token.claimedBy.isInstanceOf && request.session.get("username").getOrElse("") == token.claimedBy) {
+        <!--<p>Token you remember appear on the tok.la main page</p>-->
+        <li>
+            <a href="#" ng-hide="!token.remembered || token.remembered=='false'" class="btn btn-default" onclick="forgetToken()">forget token</a>
+            <a href="#" ng-hide="token.remembered" class="btn btn-primary" onclick="rememberToken()">remember token</a>
+        </li>
 
-                <p>This token is claimed by <span class="label label-default">you.</span></p>
+    </ul>
 
-                <a href="#" onclick="releaseToken()" class="btn btn-primary">release this token!</a>
-
-
-            </li>
-            <li class="dropdown" id="menuLogin">
-                <a class="btn btn-default" href="#" data-toggle="dropdown" id="navLogin">configure token</a>
-
-                <div class="dropdown-menu" style="padding:17px; margin-top:2px !important;">
-                    @form(routes.Application.setTokenPicture(token.id)) {
-                    @inputText(tokenPictureForm("picurl"), 'class -> "form-control")
-                            <span class="input-group-btn">
-                                <button class="btn btn-default" type="submit" value="">set token picture</button>
-                            </span>
-                    }
-                </div>
-            </li>
-            } else {
-            <li>
-                <p>This token is claimed by <span class="label label-default">@token.claimedBy</span></p>
-
-                @if(token.applicants.exists((a: TokenApplicant) => {
-                a.applicantName == request.session.get("username").getOrElse("")
-                })) {
-                <a href="#" onclick="releaseToken()">leave queue</a>
-                } else {
-                <a href="#" onclick="releaseToken()">enqueue for this token</a>
-                }
-            </li>
-
-
-            }
-            }
-
-            <!--<p>Token you remember appear on the tok.la main page</p>-->
-            <li>
-
-
-                @if(token.associatedUsers.exists((u) => request.session.get("username").getOrElse("") == u.id)) {
-                <a href="#" class="btn btn-default" onclick="forgetToken()">forget token</a>
-
-                } else {
-                <a href="#" class="btn btn-primary" onclick="rememberToken()">remember token</a>
-                }
-            </li>
-
-        </ul>
-
-    </div>
+</div>
 
 
 </div>
