@@ -107,9 +107,13 @@ app.directive('scrollIf', function() {
         restrict: "A",
         link: function(scope, element, attributes) {
             scope.$on("Finished",function(){ //Handle an event when all the items are rendered with ng-repeat
-                var chat_height = $(element)[0].scrollHeight;
-                console.log(chat_height);
-                element.scrollTop(chat_height);
+                if ($(".chatList").css("overflow") == "auto") {
+                    var chat_height = $(element)[0].scrollHeight;
+                    console.log(chat_height);
+                    element.scrollTop(chat_height);
+                } else {
+                    window.scrollTo(0,document.body.scrollHeight);
+                }
             });
         }
     }

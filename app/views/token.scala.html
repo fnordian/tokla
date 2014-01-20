@@ -8,7 +8,9 @@
 @main(token.name, "token") {
 <script src='@routes.Assets.at("javascripts/tokenevents.js")' type="text/javascript"></script>
 
-<div class="page-header"/>
+<div class="page-header"></div>
+
+@modalTokenPreferences()
 
 <div class="row" ng-init="
                     username='@request.session.get("username")';
@@ -26,23 +28,139 @@
 
 ">
 
-<div class="col-lg-9">
 
-    <div class="well">
-        <h1>@token.name</h1>
 
-        <p ng-hide="!token.claimTime || !token.claimedBy">claimed since {{token.claimTime | date:'yyyy-MM-dd HH:mm:ss Z'}}</p>
+<div class="col-md-4 no-padding-on-phone">
 
-        <p ng-hide="token.applicants.length == 0">
-            {{token.applicants[0]}}
-        </p>
 
-        <p ng-hide="token.applicants.length == 0">{{token.applicants.length}} waiting</p>
 
-        <div>
-            <img ng-hide="!token.picurl" ng-src="{{token.picurl}}" class="tokenimage" />
-        </div>
-    </div>
+
+
+
+
+
+
+            <div class="sidebar">
+               <!-- <div class="sidebar-top">
+                    bla bla
+                </div>-->
+                <ul class="">
+                    <li class="sidebar-todo first-child sticky-on-phone" ng-hide="token.claimedBy"  onclick="claimToken()" >
+                        <div class="sidebar-icon glyphicon glyphicon-record" style="min-height: 60px"></div>
+                        <div class="sidebar-content">
+                            <h4 class="sidebar-name">
+                                Claim
+                            </h4>
+                            Token is unclaimed at the moment
+                        </div>
+                    </li>
+
+                    <li class="sidebar-todo first-child sticky-on-phone" ng-hide="token.claimedBy != '@request.session.get("username").getOrElse("")'"  onclick="releaseToken()" >
+                        <div class="sidebar-icon glyphicon glyphicon-record" style="min-height: 60px"></div>
+                        <div class="sidebar-content">
+                            <h4 class="sidebar-name">
+                                Release
+                            </h4>
+                            This token is claimed by you.
+                        </div>
+                    </li>
+
+                    <li class="sidebar-todo first-child sticky-on-phone" ng-hide="
+                            !token.claimedBy
+                            || token.claimedBy == '@request.session.get("username").getOrElse("")'
+                            || token.applicants.indexOf(username) >= 0
+                    " onclick="enqueueForToken()" >
+                        <div class="sidebar-icon glyphicon glyphicon-eye-open" style="min-height: 60px"></div>
+                        <h4 class="sidebar-name">Enqueue</h4>
+                        This token is claimed by {{token.claimedBy}}
+                    </li>
+
+                    <li class="sidebar-todo first-child sticky-on-phone" ng-hide="!token.claimedBy || token.applicants.indexOf(username) == -1" onclick="leaveTokenQueue()" >
+                        <div class="sidebar-icon glyphicon glyphicon-eye-close" style="min-height: 60px"></div>
+                        <div>
+                        <h4 class="sidebar-name">Leave queue</h4>
+                        This token is claimed by {{token.claimedBy}}
+                        </div>
+                    </li>
+
+
+
+                    <li class="last-child">
+
+                        <div class="sidebar-content" style="margin-right: -42px;">
+                            <h4 class="sidebar-name">
+                                Conversation
+                            </h4>
+                            <div class="dialog animate-hide coloredscrollbar some-right-padding-on-phone" ng-controller="TokenChatCtrl"
+                                 ng-init="chat = {lines : [], tokenBaseUrl : '/tokenEvents/@token.id/' }" ng-hide="showChat==0" style="margin-top: 10px; margin-right: -40px; padding-right:40px;">
+                                <form onsubmit="sendChatLine(); return false;" class="form-inline">
+                                    <div id="chatMessageList">
+                                        <ul class="chatList" scroll-if>
+                                            <li style="margin-left:-22px" ng-repeat="chatMessage in chat.lines" scroll-item>
+                                                <table><tr>
+                                                    <td>
+                                                        <img ng-src="{{chatMessage.avatar}}">
+                                                    </td>
+                                                    <td>
+
+                                                        <div class="popover right"  style="display:block;position: relative; max-width: 1000px;">
+                                                            <div class="arrow"></div>
+                                                            <h3 class="popover-title" style="word-wrap:break-word;word-break: break-all;">{{chatMessage.timeStamp | date:'yyyy-MM-dd HH:mm:ss Z'}} - {{chatMessage.sender}}</h3>
+                                                            <div class="popover-content" style="word-wrap:break-word;word-break: break-all;">
+                                                                {{chatMessage.message}}
+                                                            </div>
+                                                        </div>
+
+                                                    </td>
+                                                </tr></table>
+                                            </li>
+                                        </ul>
+                                        <div id="push"></div>
+                                    </div>
+
+                                    <script>
+                                        var sendingChatLine = 0;
+                                        function sendChatLine() {
+                                            if (sendingChatLine == 0) {
+                                                sendingChatLine = 1;
+                                                $.ajax({
+                                                    type: "POST",
+                                                    url: "@routes.Comet.chatSay(token.id)",
+                                                    data: { "message": $("#chatLine").val()},
+                                                    dataType: "json",
+                                                    success: function () {
+                                                        sendingChatLine = 0;
+                                                    },
+                                                    error: function () {
+                                                        sendingChatLine = 0;
+                                                    }
+                                                });
+                                                $("#chatLine").val("");
+                                            }
+                                        }
+                                    </script>
+
+                                    <div id="chatInput" class="input-group bottom-on-phone" style="margin-top: 10px; margin-right: 21px;">
+                                        <input type="text" name="message" id="chatLine" class="form-control" autocomplete="off"
+                                               placeholder="write a comment" onsubmit="sendChatLine()">
+
+                                        <div class="input-group-btn">
+                                            <button type="submit" class="btn btn-default btn-wide btn-primary">send</button>
+                                        </div>
+                                        <div class="some-vertical-space-on-phone"></div>
+                                    </div>
+
+                                </form>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+
+
+
+<!--
     <div ng-init="showChat = 1">
         <a href="#fakelink" class="btn btn-xs btn-default btn-block" ng-click="showChat = 1"
            ng-hide="showChat==1"><span class="glyphicon glyphicon-chevron-down pull-left"></span>show
@@ -110,9 +228,59 @@
             </form>
         </div>
     </div>
+
+-->
 </div>
 
-<div class="col-lg-3">
+
+<div class="col-md-8">
+
+    <div class="well tokenView">
+
+        <div class="iconbar" style="float: right">
+            <ul>
+                <li>
+                    <a href="#fakelink" class="fui-heart remembered"  ng-class="{'switch-on': token.remembered}" onclick="this.classList.contains('switch-on') ? forgetToken() : rememberToken()">
+                        <span class="iconbar-unread" ng-hide="token.remembered">!</span>
+                    </a>
+                </li>
+                <li ng-hide="token.claimedBy != '@request.session.get("username").getOrElse("")'">
+                <a href="#fakelink" class="fui-gear" onclick="$('#setTokenPictureModal').show()">
+
+                </a>
+                </li>
+            </ul>
+
+            <!--
+            <div  onclick="$(this).find('.switch-animate')[0].classList.contains('switch-on') ? forgetToken() : rememberToken()">
+                <div class="switch switch-square has-switch" data-on-label="&lt;i class='fui-check'&gt;&lt;/i&gt;" data-off-label="&lt;i class='fui-cross'&gt;&lt;/i&gt;">
+                    <div class="switch-animate" ng-class="{'switch-on': token.remembered,'switch-off': !token.remembered}"><input type="checkbox" checked=""><span class="switch-left"><i class="fui-heart"></i></span><label>&nbsp;</label><span class="switch-right"><i class="fui-heart"></i></span></div>
+                </div>
+            </div>
+-->
+        </div>
+
+
+        <h1>@token.name</h1>
+
+        <p ng-hide="!token.claimTime || !token.claimedBy">claimed since {{token.claimTime | date:'yyyy-MM-dd HH:mm:ss Z'}}</p>
+        <p ng-hide="token.claimedBy">not claimed at the moment</p>
+
+        <p ng-hide="token.applicants.length == 0">
+            {{token.applicants[0]}}
+        </p>
+
+        <p ng-hide="token.applicants.length == 0">{{token.applicants.length}} waiting</p>
+
+        <div>
+            <img ng-hide="!token.picurl" ng-src="{{token.picurl}}" class="tokenimage" />
+        </div>
+
+
+
+
+    </div>
+
     <script>
         function post(url, data) {
             $.ajax({
@@ -152,22 +320,25 @@
 
     </script>
 
-    <ul class="nav nav-stacked span2">
 
 
-        <li ng-hide="token.claimedBy">
-            <p>This token is not claimed at the moment</p>
-
-            <a href="#" class="btn btn-primary" onclick="claimToken()">claim this token!</a>
-        </li>
+    <!--
+        <ul class="nav nav-stacked span2">
 
 
+            <li ng-hide="token.claimedBy">
+                <p>This token is not claimed at the moment</p>
 
-        <li ng-hide="token.claimedBy != '@request.session.get("username").getOrElse("")'">
+                <a href="#" class="btn btn-primary" onclick="claimToken()">claim this token!</a>
+            </li>
+
+
+
+            <li ng-hide="token.claimedBy != '@request.session.get("username").getOrElse("")'">
             <p>This token is claimed by <span class="label label-default" >you.</span></p>
             <a href="#" onclick="releaseToken()" class="btn btn-primary">release this token!</a>
-        </li>
-        <li ng-hide="token.claimedBy != '@request.session.get("username").getOrElse("")'"  class="dropdown" id="menuLogin">
+            </li>
+            <li ng-hide="token.claimedBy != '@request.session.get("username").getOrElse("")'"  class="dropdown" id="menuLogin">
             <a class="btn btn-default" href="#" data-toggle="dropdown" id="navLogin">configure token</a>
 
             <div class="dropdown-menu" style="padding:17px; margin-top:2px !important;">
@@ -175,36 +346,20 @@
                 <form>
                     <input type="text" class="form-control" id="picurltext"/>
 
-                    <span class="input-group-btn">
-                        <button class="btn btn-default" value="" onclick="setPictureUrl($('#picurltext').val())">set token picture</button>
-                    </span>
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" value="" onclick="setPictureUrl($('#picurltext').val())">set token picture</button>
+                        </span>
 
                 </form>
             </div>
-        </li>
+            </li>
 
-        <li>
-            <p ng-hide="!token.claimedBy || token.claimedBy == '@request.session.get("username").getOrElse("")'">This token is claimed by <span class="label label-default">{{token.claimedBy}}</span></p>
-
-            <a href="#" class="btn btn-default" ng-hide="token.applicants.indexOf(username) == -1"  onclick="leaveTokenQueue()">leave queue</a>
-            <a href="#" class="btn btn-primary" ng-hide="token.applicants.indexOf(username) != -1 || !token.claimedBy ||  token.claimedBy == '@request.session.get("username").getOrElse("")'" onclick="enqueueForToken()">enqueue for this token</a>
-
-        </li>
-
-
-
-        <!--<p>Token you remember appear on the tok.la main page</p>-->
-        <li>
-            <a href="#" ng-hide="!token.remembered || token.remembered=='false'" class="btn btn-default" onclick="forgetToken()">forget token</a>
-            <a href="#" ng-hide="token.remembered" class="btn btn-primary" onclick="rememberToken()">remember token</a>
-        </li>
 
     </ul>
-
+-->
 </div>
 
 
-</div>
 
 
 }

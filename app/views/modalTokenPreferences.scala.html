@@ -1,0 +1,28 @@
+@()()(implicit flash: Flash, request: Request[AnyContent])
+
+<div class="static-modal-backdrop">
+    <div class="modal" id="setTokenPictureModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close fui-cross" data-dismiss="modal" aria-hidden="true" onclick="$(this).closest('.modal').hide()"></button>
+                    <h4 class="modal-title">Configure token</h4>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        Set a token picture
+                        <br>
+                        <span class="small">Enter an URL of a picture.</span>
+                    </p>
+                    <form>
+                        <input type="text" class="form-control" id="picurltext"/>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" class="btn btn-default btn-wide" onclick="$(this).closest('.modal').hide()">Cancel</a>
+                    <a href="#" class="btn btn-wide btn-primary" onclick="setPictureUrl($('#picurltext').val()); $(this).closest('.modal').hide()">Save</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

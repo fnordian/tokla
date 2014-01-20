@@ -1,5 +1,8 @@
 
 @import "../less/less/flat-ui";
+@import "../flatui/less/modules/iconbar";
+@import "sidebar";
+
 
 .tokenimage {
   max-width: 500px;
@@ -11,10 +14,196 @@ ul.chatList {
 }
 
 @media (max-width: 767px) {
-
-
   .tokenimage {
     max-width: 200px;
     height: auto;
   }
 }
+
+.coloredScrollbar {
+  scrollbar-base-color: @brand-primary;
+
+  ::-webkit-scrollbar {
+    height: 12px;
+    width: 12px;
+    background: #000;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #3;
+    -webkit-border-radius: 1ex;
+    -webkit-box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.75);
+  }
+  ::-webkit-scrollbar-corner {
+    background: #000;
+  }
+}
+
+.sidebar li.first-child {
+  @media(max-width:767px){
+    padding-bottom: 0px;
+    padding-top: 8px;
+  }
+}
+
+ul.chatList {
+  @media(max-width:767px){
+    overflow: none;
+  }
+
+  @media(min-width:768px){
+    overflow: auto;
+    max-height:300px;
+    min-height: 300px;
+  }
+}
+
+#chatMessageList li {
+  @media(max-width:767px){
+    padding-top: 2px;
+    padding-bottom: 2px;
+  }
+}
+
+#chatInput {
+  height: auto;
+
+  @media(max-width:767px){
+
+    margin-top: -150px;
+
+    clear:both;
+    position: fixed;
+    bottom: -1px;
+    z-index: 1020;
+
+    input {
+      margin-bottom: 10px;
+    }
+    button {
+      margin-bottom: 10px;
+    }
+  }
+}
+
+div.tokenView {
+  @media(max-width:767px){
+    display: none;
+  }
+}
+
+div.pageFooter {
+  @media(max-width:767px){
+    display: none;
+  }
+}
+
+
+
+html,
+body {
+  height: 100%;
+  /* The html and body elements cannot have any padding or margin. */
+}
+
+.main {
+  height: 100%;
+}
+
+/* Wrapper for page content to push down footer */
+.big-on-phone {
+  @media (max-width: 767px) {
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    /* Negative indent footer by it's height */
+    margin: 0 auto -60px;
+  }
+}
+
+.no-padding-on-phone {
+  @media (max-width: 767px) {
+    padding-right: 0px;
+    padding-left: 0px;
+  }
+}
+
+.some-right-padding-on-phone {
+  @media (max-width: 767px) {
+    padding-right: 10px !important;
+    padding-left: 10px !important;
+  }
+}
+
+.sticky-on-phone {
+  @media (max-width: 767px) {
+    position: fixed !important;
+    z-index: 1020;
+    width: 100%;
+  }
+}
+
+.sidebar li {
+  @media (max-width: 767px) {
+    padding-left: 13px !important;
+  }
+}
+
+.sidebar li.last-child {
+  @media (max-width: 767px) {
+    padding-top: 100px;
+    padding-bottom: 50px;
+  }
+}
+
+.some-vertical-space-on-phone {
+  @media (max-width: 767px) {
+    padding-bottom: 10px;
+  }
+}
+/* Set the fixed height of the footer here */
+
+.page-header {
+  @media (max-width: 767px) {
+    margin: 37px 0px 0px 0px;
+  }
+}
+
+#chatInput {
+  @media (max-width: 767px) {
+    left: 0px;
+    padding-bottom: 10px;
+    background: @brand-primary;
+    padding-left: 4px;
+    padding-right: 4px;
+    margin-right: 0px !important;
+  }
+}
+
+.navbar {
+  border-radius: 0px;
+}
+
+body {
+  @media (max-width: 767px) {
+    background: @brand-primary;
+
+  }
+}
+
+#chatLine {
+  @media (max-width: 767px) {
+    height: 41px;
+
+  }
+}
+
+
+/* Lastly, apply responsive CSS fixes as necessary */
+/*@media (max-width: 767px) {
+  #chatInput {
+    margin-left: -20px;
+    margin-right: -20px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}*/
