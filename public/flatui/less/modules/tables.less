@@ -17,9 +17,9 @@
         border-top: 2px solid @table-border-color;
       }
       > th {
-		    color: mix(@brand-primary, white, 85%);
-		    border-bottom: 2px solid @table-border-color;
-		  }
+        color: mix(@brand-primary, white, 85%);
+        border-bottom: 2px solid @table-border-color;
+      }
     }
   }
   [class*="fui-"] {
@@ -31,7 +31,7 @@
   }
   .checkbox,
   .radio {
-  	margin: 0 0 0 -9px;
+    margin: 0 0 0 -9px;
 
     &.no-label {
       padding-left: 0;
@@ -49,18 +49,18 @@
 .table-bordered {
   border: 2px solid @table-border-color;
   font-size: ceil(@component-font-size-base * 0.933); // ~14px
-	
-	> thead,
+  
+  > thead,
   > tbody,
   > tfoot {
     > tr {
       th,
-		  td {
-		    border: 2px solid @table-border-color !important;
-		    padding-top: 8px;
-		    padding-bottom: 8px;
-		    vertical-align: middle;
-		  }
+      td {
+        border: 2px solid @table-border-color !important;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        vertical-align: middle;
+      }
     }
   }  
 }
@@ -90,55 +90,21 @@
 .table-hover {
   > tbody {
     > tr:hover {
-	    > td,
-	    > th {
-		    background-color: @table-bg-active;
-	    }
+      > td,
+      > th {
+        background-color: @table-bg-active;
+      }
     }
   }
 }
 
 // Table backgrounds
-.table tbody tr {
-  &.success > td,
-  & > td.success {
-    background-color: @table-success;
-    border-color: mix(@brand-success, white, 20%);
-  }
-  &.error > td,
-  & > td.error,
-  &.danger > td,
-  & > td.danger {
-    background-color: @table-danger;
-    border-color: mix(@brand-danger, white, 20%);
-  }
-  &.warning > td,
-  & > td.warning {
-    background-color: @table-warning;
-    border-color: mix(@brand-warning, white, 33%);
-  }
-  &.info > td,
-  & > td.info {
-    background-color: @table-info;
-    border-color: mix(@brand-info, white, 20%);
-  }
-}
+//
+// Exact selectors below required to override `.table-striped` and prevent
+// inheritance to nested tables.
 
-// Hover states for .table-hover
-.table-hover tbody tr {
-  &.success:hover > td {
-    background-color: darken(@table-success, 2%);
-  }
-  &.error:hover > td,
-  &.danger:hover > td {
-    background-color: darken(@table-danger, 1%);
-  }
-  &.warning:hover > td {
-    background-color: darken(@table-warning, 2%);
-  }
-  &.info:hover > td {
-    background-color: darken(@table-info, 1%);
-  }
-}
-
-
+// Generate the contextual variants
+.table-row-variant(success; @table-success);
+.table-row-variant(info; @table-info);
+.table-row-variant(warning; @table-warning);
+.table-row-variant(danger; @table-danger);

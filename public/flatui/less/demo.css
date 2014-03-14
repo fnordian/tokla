@@ -76,9 +76,6 @@
   margin-left: 20px;
   width: 580px;
 }
-.demo-content.demo-content-article {
-  font-size: 24px;
-}
 .demo-content.demo-content-article p {
   margin-bottom: 20px;
 }
@@ -249,9 +246,7 @@
 .static-modal-backdrop .modal {
   bottom: auto;
   display: block;
-  left: auto;
   position: relative;
-  right: auto;
   top: auto;
   z-index: 1;
   overflow: hidden;
@@ -265,7 +260,6 @@
   display: block;
   left: auto;
   position: relative;
-  right: auto;
   top: auto;
   z-index: 1;
   overflow: visible;
@@ -301,6 +295,9 @@
   display: block;
   padding: 7px 20px;
 }
+.demo-col .fileinput .input-group .uneditable-input {
+  max-width: 370px;
+}
 @media (max-width: 767px) {
   .demo-row {
     margin-bottom: 0;
@@ -319,7 +316,7 @@
     width: auto;
   }
   .demo-headline {
-    font-size: 84px !important;
+    font-size: 65px !important;
     text-align: left;
     padding-left: 15px;
     padding-right: 15px;

@@ -1,28 +1,38 @@
 @(tokenForm: Form[String])(implicit flash: Flash, request: Request[AnyContent])
 
-    @import helper._
+@import helper._
 
-    @main("Create a new token", "createToken") {
-        <div class="page-header" />
-        <div class="row">
-            <div class="col-lg-12">
-                <h1>Name your token...</h1>
+@main("Create a new token", "createToken") {
+<div class="page-header"></div>
+<div class="jumbotron hide-on-phone">
+    <h1>Name your token...</h1>
+</div>
+<div class="row">
+    <div class="col-lg-12">
 
-                <p>Every token needs a name. Even the one you are about to create.</p>
+        <div class="panel panel-primary">
+            <div class="panel-heading">Every token needs a name..</div>
+            <div class="panel-body">
+
+
+                <p>..even the one you are about to create. It should be descriptive for the resource you want to manage
+                    with the token.</p>
 
                 @form(routes.Application.createToken) {
-                    <div class="input-group">
+                <div class="input-group">
 
-                        @inputText(tokenForm("name"), 'class -> "form-control")
+                    @inputText(tokenForm("name"), 'class -> "form-control")
                         <span class="input-group-btn">
-                            <button class="btn btn-default" type="submit" value="Create Token!">create new token!</button>
+                            <button class="btn btn-primary" type="submit" value="Create Token!">create new token!
+                            </button>
                         </span>
-                    </div>
+                </div>
                 }
-
-
             </div>
         </div>
 
+    </div>
+</div>
 
-    }
+
+}

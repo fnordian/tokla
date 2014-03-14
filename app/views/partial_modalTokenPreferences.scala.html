@@ -1,0 +1,204 @@
+<script type="text/javascript">
+
+    angular.module('token').directive('preferencesDialogButton', function () {
+        return {
+            restrict: 'E',
+            transclude: true,
+            replace: true,
+
+            templateUrl: 'mobileTokenPreferences.html',
+
+            compile: function (tElement, attrs, transclude) {
+                return function ($scope, element, attrs) {
+
+                    attrs.$observe('preferencesGetUrl', function (preferencesGetUrl) {
+                        attrs.$observe('preferencesSetUrl', function (preferencesSetUrl) {
+                            $scope.preferencesSetUrl = preferencesSetUrl;
+                            $scope.preferencesGetUrl = preferencesGetUrl;
+
+
+                        });
+                    });
+
+
+                    transclude($scope, function (clone) {
+                        tElement.append(clone);
+
+                        element.on('click', function (event) {
+
+                            for (var i = 0; i < clone.length; i++) {
+
+                                if (event.target == clone[i]) {
+
+                                    $scope.show($scope.preferencesGetUrl);
+                                }
+                            }
+                        });
+                    });
+                };
+            },
+
+            controller: function ($scope, $http, $element) {
+
+                $scope.preferencesSetUrl = "";
+                $scope.preferencesCopy = {}
+
+                $scope.save = function () {
+                    $http.post($scope.preferencesSetUrl, $scope.preferences);
+                    $scope.hide();
+                };
+
+
+                $scope.cancel = function () {
+                    $scope.preferences = $scope.preferencesCopy;
+                    $scope.hide();
+                };
+
+
+
+                $scope.show = function (url) {
+                    $scope.load(url);
+                    $scope.showDialog = 1;
+                    $scope.preferencesCopy = angular.copy($scope.preferences);
+                }
+                $scope.hide = function () {
+                    $scope.showDialog = 0;
+                }
+
+                $scope.load = function (url) {
+//alert("prefGetUrl: " + prefGetUrl);
+
+                    $http.get(url).then(function (preferencesResponse) {
+                        $scope.preferences = preferencesResponse.data.preferences;
+                    });
+                }
+
+                $scope.showDialog = 0;
+                $scope.foo = "";
+
+
+            },
+
+
+            link: function (scope, element, attrs) {
+                alert("element" + element);
+                attrs.$observe('preferencesGetUrl', function (preferencesGetUrl) {
+                    attrs.$observe('preferencesSetUrl', function (preferencesSetUrl) {
+                        element.on('click', function (event) {
+
+                            alert("click");
+
+                            if (event.target.parentElement.id == "prefButton") {
+                                scope.preferencesSetUrl = preferencesSetUrl;
+                                scope.show(preferencesGetUrl);
+                            }
+                        });
+
+                    });
+                });
+
+            }
+        };
+    });
+</script>
+
+<script type="text/ng-template" id="mobileTokenPreferences.html">
+    <li>
+
+
+
+    <div class="static-modal-backdrop" ng-show="showDialog">
+        <div class="modal" id="setTokenPictureModal" style="display:block">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close fui-cross" data-dismiss="modal" aria-hidden="true"
+                                ng-click="cancel()"></button>
+                        <h4 class="modal-title">Configure token</h4>
+                    </div>
+                    <div class="modal-body" id="tokenPreferencesTabView" ng-init="tab='picture'">
+                        <ul class="nav nav-tabs nav-append-content">
+                            <li ng-class="{active: tab=='picture'}"><a href="#picture" ng-click="tab='picture'">Picture</a></li>
+                            <li ng-class="{active: tab=='users'}"><a href="#users" ng-click="tab='users'">Users</a></li>
+                            <li ng-class="{active: tab=='preferences'}"><a href="#preferences" ng-click="tab='preferences'">Preferences</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <div class="tab-pane" ng-class="{active: tab=='picture'}">
+
+                                <p>
+                                    Set a token picture
+                                    <br>
+                                    <span class="small">Enter an URL of a picture.</span>
+                                </p>
+
+                                <form>
+                                    <input type="text" ng-model="preferences.picurl" class="form-control"
+                                           id="picurltext"/>
+                                </form>
+                            </div>
+                            <div class="tab-pane" ng-class="{active: tab=='preferences'}">
+
+                            </div>
+                            <div class="tab-pane" ng-class="{active: tab=='users'}">
+
+                                <ul class="nav nav-list">
+                                    <li>
+                                        <div ng-hide="addUserDialog" ng-click="addUserDialog=true">
+                                            <div class="row">
+                                                <div class="col-xs-10">add user</div>
+                                                <div class="col-xs-2">
+                                                    <span class="fui-plus" ng-click="user.removed=true"
+                                                          style="position:absolute;right:20px;"></span>
+                                                </div>
+                                            </div>
+
+
+                                        </div>
+                                        <div ng-show="addUserDialog">
+                                            <div class="row">
+                                                <div class="col-xs-12">
+                                                    <div class="input-group">
+
+
+                                                            <input class="form-control" ng-model="newUser" type="text"
+                                                                   placeholder="user email">
+
+                                                            <div class="input-group-btn">
+                                                                <button ng-click="addUserDialog=false;"
+                                                                        class="fui-cross btn btn-default"></button>
+                                                                <button ng-click="addUser(); addUserDialog=false;"
+                                                                        class="fui-plus btn btn-default"></button>
+                                                            </div>
+
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="divider"></li>
+                                    <li ng-repeat="user in preferences.users | filter:{removed:'!'+true}">
+                                        {{user.id}}
+                                        <span class="fui-cross-inverted" ng-click="user.removed=true" style="position:absolute;right:20px;"> </span>
+
+
+                                    </li>
+                                </ul>
+                            </div>
+
+                        </div>
+
+                        <div class="modal-footer">
+                            <a href="#" class="btn btn-default btn-wide" ng-click="cancel()">Cancel</a>
+
+                            <a href="#" class="btn btn-wide btn-primary"
+                               ng-click="save();">Save</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </li>
+</script>

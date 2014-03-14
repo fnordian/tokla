@@ -5,22 +5,22 @@
 .carousel-inner {
   > .item {
     &.active {
-	   	> img,
-	    > a > img {
-	      border-radius: @border-radius-large;
-	    }
-	    @media (max-width: 480px) {
-	      & > img {
-	        border-radius: @border-radius-large @border-radius-large 0 0;
-	      }
-	    } 
+      > img,
+      > a > img {
+        border-radius: @border-radius-large;
+      }
+      @media (max-width: @screen-xs-max) {
+        > img {
+          border-radius: @border-radius-large @border-radius-large 0 0;
+        }
+      } 
     } 
     &.active.left,
     &.active.right {
-	   	> img,
-	    > a > img {
-	      border-radius: 0;
-	    }
+      > img,
+      > a > img {
+        border-radius: 0;
+      }
     }   
   }
 }
@@ -47,22 +47,25 @@
   
   &.left,
   &.right {
-	  background: none @carousel-controls-background;
+    background: none @carousel-controls-background;
   }
   &.left {
     text-indent: -1px;
     left: 15px;
   }
   &.right {
-	  left: auto;
-	  right: 15px;
+    left: auto;
+    right: 15px;
   }
 }
 
-// Carousel indicator pips
-// -----------------------------
+// Optional indicator pips
+//
+// Add an unordered list with the following class and add a list item for each
+// slide your carousel holds.
+
 .carousel-indicators {
-	bottom: auto;
+  bottom: auto;
   left: auto;
   margin: 0;
   right: 16px;
@@ -72,8 +75,8 @@
   .user-select(none);
 
   li {
-  	vertical-align: top;
-  	border: none;
+    vertical-align: top;
+    border: none;
     width: 8px;
     height: 8px;
     margin: 0 0 0 6px;
@@ -81,8 +84,8 @@
     background-color: rgba(red(@carousel-controls-background), green(@carousel-controls-background), blue(@carousel-controls-background),.5);
   }
   li.active {
-	  background-color: #fff;
-	  width: 8px;
+    background-color: #fff;
+    width: 8px;
     height: 8px;
     margin: 0 0 0 6px;
   }
@@ -115,9 +118,7 @@
     line-height: 20px;
     margin-bottom: 0;
   }
-  @media (max-width: 480px) {
-    & {
-	    position: static;
-    }
+  @media (max-width: @screen-xs-max) {
+    position: static;
   }
 }

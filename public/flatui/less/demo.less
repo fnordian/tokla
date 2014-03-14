@@ -1,4 +1,6 @@
+//
 // Demo Flat UI Pro
+// --------------------------------------------------
 
 
 // Loading config with variables (changing them leads to changing a color scheme)
@@ -56,7 +58,7 @@
     padding: 50px 20px 10px;
   }
   &.typography-row {
-	  .demo-content {
+    .demo-content {
       float: none;
       margin-left: 20px;
       padding-top: 0;
@@ -64,9 +66,9 @@
       clear: both; 
     }
     .demo-type-example {
-	    padding-left: 265px;
-	    margin-bottom: 40px;
-	    position: relative;
+      padding-left: 265px;
+      margin-bottom: 40px;
+      position: relative;
     }
   }
 }
@@ -83,7 +85,6 @@
   width: 580px;
 
   &.demo-content-article {
-    font-size: ceil(@font-size-base * 1.285);
     p { margin-bottom: 20px; }
 
     ul {
@@ -204,7 +205,7 @@
 
 .demo-icons-tooltip {
   bottom: 0;
-  color: mix(@brand-primary, white, 30%);
+  color: mix(@brand-primary, @inverse, 30%);
   font-size: 12px;
   left: 100%;
   margin-left: 0 !important;
@@ -217,17 +218,17 @@
 }
 
 .demo-labels {
-	font-size: floor(@font-size-base * 1.056); // ~19px
-	
-	.visible-lg {
-		display: inline !important;
-		
-		@media (max-width: 767px) {
-			& {
-				display: none !important;
-			}
-		}
-	}	
+  font-size: floor(@font-size-base * 1.056); // ~19px
+  
+  .visible-lg {
+    display: inline !important;
+    
+    @media (max-width: 767px) {
+      & {
+        display: none !important;
+      }
+    }
+  } 
 }
 
 
@@ -263,12 +264,12 @@
   padding: 13px 20px 15px;
   
   .flat {
-	  width: 300px;
+    width: 300px;
   }
   @media (max-width: 767px) { 
-	  .flat {
-		  width: 100%;
-	  }
+    .flat {
+      width: 100%;
+    }
   }
 }
 
@@ -280,45 +281,42 @@
   width: 100%;
   
   .modal {
-  	bottom: auto;
+    bottom: auto;
     display: block;
-    left: auto;
     position: relative;
-    right: auto;
     top: auto;
     z-index: 1;
     overflow: hidden;
     padding-bottom: 20px;
   }
   .modal-dialog {
-	  padding: 0;
+    padding: 0;
   }
 }
 
 .components-static-modal {
-	.modal {
-  	bottom: auto;
+  .modal {
+    bottom: auto;
     display: block;
     left: auto;
     position: relative;
-    right: auto;
     top: auto;
     z-index: 1;
     overflow: visible;
   }
   .modal-dialog,
   .modal-content {
-	  width: auto;
+    width: auto;
   }
   .modal-dialog {
-	  padding: 0;
+    padding: 0;
   }
 }
 
 // Sidebar for Components navigation
 .demo-sidebar {
-	font-size: floor(@font-size-base * 0.778); // ~14px
-	line-height: 1.214; // ~17px
+  font-size: floor(@font-size-base * 0.778); // ~14px
+  line-height: 1.214; // ~17px
   height: 100%;
   left: 0;
   margin: 0;
@@ -347,6 +345,18 @@
   }
 }
 
+
+// File Input
+.demo-col {
+  .fileinput {
+    .input-group {          // Inline fileinput
+      .uneditable-input {
+        max-width: 370px;
+      }
+    }
+  } 
+}
+
 //
 // Responsive: Landscape phone to desktop/tablet
 // --------------------------------------------------
@@ -368,7 +378,7 @@
     width: auto;
   }
   .demo-headline {
-    font-size: ceil(@font-size-base * 4.643) !important;
+    font-size: ceil(@font-size-base * 3.611) !important;
     text-align: left;
     padding-left: 15px;
     padding-right: 15px;
@@ -388,9 +398,9 @@
     }
   }
   .typography-row {
-  	.demo-type-example {
-	  	padding-left: 0 !important;
-  	}
+    .demo-type-example {
+      padding-left: 0 !important;
+    }
     .demo-heading-note,
     .demo-text-note {
       position: static !important;
@@ -398,19 +408,19 @@
     }
   }
   .demo-illustrations .demo-content-wide > div {
-	  margin-left: 67px;
+    margin-left: 67px;
   }
 }
 
 @media (max-width: 480px) {
-	.demo-illustrations .demo-content-wide > div {
-		margin-left: 23px;
-	}
-	.demo-navigation {
-		.mll.pvl {
-			padding: 0;
-			margin-left: 0 !important;
-			margin-bottom: 20px;
-		}
-	}
+  .demo-illustrations .demo-content-wide > div {
+    margin-left: 23px;
+  }
+  .demo-navigation {
+    .mll.pvl {
+      padding: 0;
+      margin-left: 0 !important;
+      margin-bottom: 20px;
+    }
+  }
 }

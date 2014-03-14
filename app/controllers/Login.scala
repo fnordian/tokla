@@ -10,6 +10,8 @@ import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 import models.db.TokenDb
 import models.User
+import org.squeryl.PrimitiveTypeMode
+import PrimitiveTypeMode._
 import scala.concurrent._
 
 trait LoggedIn extends Controller {
@@ -131,8 +133,17 @@ import play.api.data.Form
   }
 
   def ensureUserDbEntry(user: User) = {
-    TokenDb.users.insertOrUpdate(user)
+    Logger.debug("ensureUserDbEntry " + user.id)
+
+    TokenDb.users.lookup(user.id) match {
+      case None => TokenDb.users.insert(user)
+      case result: Option[User] => {
+
+      }
+    }
+
     user
+
   }
 
   def openIDCallback = Action {

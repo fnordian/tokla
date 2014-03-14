@@ -18,6 +18,8 @@ POST        /token/:id/release          controllers.Application.releaseToken(id:
 POST        /token/:id/enqueue          controllers.Application.enqueueForToken(id: String)
 POST        /token/:id/deenqueue        controllers.Application.deenqueueForToken(id: String)
 
+GET         /premium/status             controllers.Premium.showPremiumStatus
+
 
 GET         /tokenEvents/:id/:timestamp controllers.Comet.tokenEvents(id: String, timestamp: Long)
 POST        /token/:id/chatSay          controllers.Comet.chatSay(id: String)
@@ -29,7 +31,8 @@ POST        /json/token/:id/enqueue     controllers.JSONApplication.enqueueForTo
 POST        /json/token/:id/deenqueue   controllers.JSONApplication.deenqueueForToken(id: String)
 POST        /json/token/:id/remember    controllers.JSONApplication.rememberToken(id: String)
 POST        /json/token/:id/forget      controllers.JSONApplication.forgetToken(id: String)
-POST        /json/token/:id/picture     controllers.JSONApplication.setTokenPicture(id: String)
+GET         /json/token/:id/preferences controllers.JSONApplication.getTokenPreferences(id: String)
+POST        /json/token/:id/preferences controllers.JSONApplication.setTokenPreferences(id: String)
 
 
 # Map static resources from the /public folder to the /assets URL path

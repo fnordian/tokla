@@ -223,8 +223,32 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
   }
 
 
+  def getTokenPreferences(id: String) = IsAuthenticated {
+    username => implicit request =>
+      import schema._
+      import PrimitiveTypeMode._
+      withDbSession({
+        implicit session =>
+          val token = tokens.get(id)
+          Logger.info("number of associatedUsers: " + token.associatedUsers.size)
+          Ok(
 
-  def setTokenPicture(id: String) = IsAuthenticated {
+            JsObject(Seq("success" -> JsBoolean(true), "preferences" -> JsObject(Seq(
+              "picurl" -> JsString(token.picurl),
+              "users" -> JsArray(token.associatedUsers.map((u: models.User) =>
+                JsObject(Seq(
+                  "id" -> JsString(u.id)).toSeq)
+              ).toSeq)
+            ))))
+          )
+      })
+  }
+
+  def userMaySetTokenPicture(token: models.Token, username: String) = {
+    (token.claimedBy == null || token.claimedBy.isEmpty || !token.claimedBy.equals(username))
+  }
+
+  def setTokenPreferences(id: String) = IsAuthenticated {
     username => implicit request =>
       import schema._
       import PrimitiveTypeMode._
@@ -238,13 +262,13 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
           Logger.info("json: "+ (json))
           Logger.info("json pictureUrl: "+ (json \ "pictureUrl"))
 
-          val picurl = (json \ "pictureUrl").as[String]
+          val picurl = (json \ "picurl").as[String]
 
           Logger.info("setting token picture " + id + " username " + username + " " + token.claimedBy + " " + token.claimedBy.equals(username))
 
               Logger.info("token about to get a new picture")
 
-              if ((token.claimedBy == null || token.claimedBy.isEmpty || !token.claimedBy.equals(username))) {
+              if (userMaySetTokenPicture(token, username)) {
                 jsonError("token not claimed by you")
               } else {
                 val newToken = token.copy(picurl = picurl)

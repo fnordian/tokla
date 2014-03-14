@@ -25,7 +25,6 @@
         Seq(
             ("home", "Home", routes.Application.index),
             ("createToken", "Create new token", routes.Application.createTokenForm),
-            ("about", "About this", routes.Application.disclaimer),
             loginoutItem
         )
     }
@@ -84,10 +83,10 @@
                 @content
             </div>
 
-            <footer>
-                <div class="container pageFooter">
+            <div class="bottom-menu pageFooter">
+                <div class="container">
                     <div class="row">
-                        <div class="col-md-7">
+                        <div class="col-md-12">
                             <h3 class="footer-title">agile, social, buzz, buzz...</h3>
                             <p>tok.la is the easy solution for coordinating workflow of your agile team.
                             </p>
@@ -95,10 +94,15 @@
                                 <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://tok.la/" data-text="Every agile developer should use it!" data-via="agiletoken">Tweet</a>
                                 <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
                             </p>
+                            <p style="text-align: center;">
+                                <a href="@routes.Application.index">Home</a>
+                                |
+                                <a href="@routes.Application.disclaimer">Disclaimer</a>
+                            </p>
 
                         </div>
                     </div>
                 </div>
-            </footer>
+            </div>
         </body>
     </html>

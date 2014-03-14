@@ -5,10 +5,8 @@
 .pagination {
   position: relative;
   
-  @media (max-width: 480px) {
-    & {
-      display: block;
-    }
+  @media (max-width: @screen-xs-max) {
+    display: block;
   }
 
   ul {
@@ -19,14 +17,12 @@
     display: inline-block;
     border-radius: @border-radius-large;
 
-    @media (max-width: 480px) {
-      & {
-        height: 41px;
-        padding: 0 55px 0 52px;
-        overflow: auto;
-        white-space: nowrap;
-        border-radius: @border-radius-large;
-      }
+    @media (max-width: @screen-xs-max) {
+      height: 41px;
+      padding: 0 55px 0 52px;
+      overflow: auto;
+      white-space: nowrap;
+      border-radius: @border-radius-large;
     }
 
     li {
@@ -96,7 +92,7 @@
         }
       }
 
-      @media (max-width: 480px) {
+      @media (max-width: @screen-xs-max) {
         &.next,
         &.previous {
           background-color: @pagination-color;
@@ -170,9 +166,9 @@
     }
   }
 
-  // RWD
+  // Responsive
   // --------------------------------------
-  @media (max-width: 480px) {
+  @media (max-width: @screen-xs-max) {
     & {
       > .btn {
         display: block;
@@ -269,10 +265,8 @@
             border-color: mix(@pagination-color, white, 66%) !important;
           }
 
-          @media (max-width: 480px) {
-            & {
-              margin-right: 0;
-            }
+          @media (max-width: @screen-xs-max) {
+            margin-right: 0;
           }
         }
       }
@@ -370,25 +364,23 @@
     }
   }
 
-  @media (max-width: 480px) {
-    & {
-      height: 50px;
-      overflow: hidden;
-      text-align: center;
-      
-      > li {
-        &.previous {
-          display: block;
-          margin-bottom: 10px;
-          text-align: left;
-          width: 50%;
-        }
-        &.next {
-          float: right;
-          margin-top: -50px;
-          text-align: right;
-          width: 50%;
-        }
+  @media (max-width: @screen-xs-max) {  
+    height: 50px;
+    overflow: hidden;
+    text-align: center;
+    
+    > li {
+      &.previous {
+        display: block;
+        margin-bottom: 10px;
+        text-align: left;
+        width: 50%;
+      }
+      &.next {
+        float: right;
+        margin-top: -50px;
+        text-align: right;
+        width: 50%;
       }
     }
   }
@@ -396,7 +388,7 @@
 
 // Pagination dropdown
 // --------------------------------------------------
-.pagination-dropdown {		
+.pagination-dropdown {    
   ul {
     min-width: 67px;
     width: auto;
@@ -432,10 +424,10 @@
   }
 
   &.dropup {
-  	position: relative;
-  	
-		.dropdown-arrow {
-			border-top-color: @pagination-color;
-		}
+    position: relative;
+    
+    .dropdown-arrow {
+      border-top-color: @pagination-color;
+    }
   }
 }

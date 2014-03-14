@@ -10,36 +10,8 @@
   opacity: 0;
   padding: 0;
   visibility: hidden;
-  width: 100%;
   .box-shadow(none);
   .transition(.25s);
-
-  // Typeahead
-  // ---------
-  &.typeahead {
-    display: none;
-    opacity: 1;
-    visibility: visible;
-    width: auto;
-    margin-top: 5px;    
-    border: 2px solid @brand-secondary;
-    padding: 5px 0;
-    background-color: @inverse;
-    border-radius: @border-radius-large;
-
-    li {
-      a {
-        padding: 6px 14px;
-      }
-      &:first-child,
-      &:last-child {
-        a {
-          padding: 6px 14px;
-          border-radius: 0;
-        }
-      }
-    }
-  }
 
   // Opened state
   .open > & {
@@ -119,10 +91,12 @@
       padding: 0 15px;
     }
   }
-  @media (max-width: 480px) {
-    & {
-      border-radius: 0 0 @border-radius-large @border-radius-large !important;
-    }
+  @media (max-width: @screen-xs-max) {
+    border-radius: 0 0 @border-radius-large @border-radius-large !important;
+  }
+  .divider {
+    margin-top: 3px;
+    margin-bottom: 3px;
   }
 }
 
@@ -162,7 +136,7 @@
     }
   }
   > .dropdown-arrow {
-    margin-top: 9px;
+    margin-top: 11px;
     opacity: 1;
   }
 }
@@ -171,13 +145,13 @@
 // --------------------------------------------------
 .dropdown-arrow {
   border-style: solid;
-  border-width: 0 9px 9px 9px;
+  border-width: 0 8px 7px;
   border-color: transparent transparent mix(@inverse, @brand-primary, 94%) transparent;
   height: 0;
   margin-top: 0;
   opacity: 0;
   position: absolute;
-  right: 13px;
+  right: 19px;
   top: 100%;
   width: 0;
   z-index: 10;
@@ -251,11 +225,11 @@
 //
 // Responsive: Landscape phone
 // --------------------------------------------------
-@media (max-width: 480px) {
+@media (max-width: @screen-xs-max) {
   .dropdown-menu {
     li {
       a {
-        i[class*="icon-"] {
+        [class*="icon-"] {
           display: none;
         }
       }

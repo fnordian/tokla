@@ -1,0 +1,37 @@
+@(username: String, paymentAddresses: List[PaymentAddress])(implicit flash: Flash, request: Request[AnyContent])
+
+@import java.text.SimpleDateFormat
+
+@import helper._
+
+
+@main("premium", "token") {
+<script src='@routes.Assets.at("javascripts/tokenevents.js")' type="text/javascript"></script>
+
+<div class="page-header"></div>
+
+
+<div class="jumbotron hide-on-phone">
+    <h1>premium services make your token super cool</h1>
+</div>
+<div class="row hide-on-phone">
+    <div class="col-md-12">
+
+
+        <div class="panel panel-primary">
+            <div class="panel-heading">Your current premium status
+            </div>
+            <div class="panel-body">
+                <p>You don't have premium. Get it now!</p>
+            </div>
+        </div>
+        <div>
+            addresses:
+            <br>
+            @paymentAddresses
+        </div>
+    </div>
+</div>
+
+
+}
