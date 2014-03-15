@@ -1,13 +1,12 @@
 package controllers
 
-import play.api.mvc.{SimpleResult, Action, Controller}
+import play.api.mvc.{Action, Controller}
 import models.db.TokenDb
-import play.api.libs.json.Json._
 import org.squeryl.PrimitiveTypeMode
 import play.api.libs.json._
 import play.api.Logger
 import models.chat._
-import models.{TokenApplicant, TokenUserReference}
+import models.TokenApplicant
 import controllers.mail.MailNotification
 import play.api.libs.json.JsString
 import play.api.libs.json.JsBoolean
@@ -245,7 +244,30 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
   }
 
   def userMaySetTokenPicture(token: models.Token, username: String) = {
-    (token.claimedBy == null || token.claimedBy.isEmpty || !token.claimedBy.equals(username))
+    !(token.claimedBy == null || token.claimedBy.isEmpty || !token.claimedBy.equals(username))
+  }
+
+  def userMaySetTokenUser(token: models.Token, username: String) = {
+    token.associatedUsers.exists((u: models.User) => u.id.equals(username))
+  }
+
+  def removeUserFromToken(token: models.Token, username: String) {
+    import schema._
+    import PrimitiveTypeMode._
+
+    val tokenUserRereference = TokenUserReference(token.id, username)
+    userReferences.delete(tokenUserRereference.id)
+  }
+
+  def addUserToToken(token: models.Token, username: String) {
+    import schema._
+
+    val user: models.User = new models.User(username);
+
+    Login.ensureUserDbEntry(user)
+
+    val tokenUserRereference = TokenUserReference(token.id, username)
+    userReferences.insert(tokenUserRereference)
   }
 
   def setTokenPreferences(id: String) = IsAuthenticated {
@@ -258,28 +280,56 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
 
           val json = request.body.asJson.getOrElse(JsNull)
 
-          Logger.info("body: "+ (request.body))
-          Logger.info("json: "+ (json))
-          Logger.info("json pictureUrl: "+ (json \ "pictureUrl"))
+          Logger.info("body: " + (request.body))
+          Logger.info("json: " + (json))
+          Logger.info("json pictureUrl: " + (json \ "pictureUrl"))
 
           val picurl = (json \ "picurl").as[String]
 
           Logger.info("setting token picture " + id + " username " + username + " " + token.claimedBy + " " + token.claimedBy.equals(username))
 
-              Logger.info("token about to get a new picture")
+          Logger.info("token about to get a new picture")
 
-              if (userMaySetTokenPicture(token, username)) {
-                jsonError("token not claimed by you")
-              } else {
-                val newToken = token.copy(picurl = picurl)
+          if (!picurl.equals(token.picurl)) {
 
-                Logger.info("token has got a new picture")
-                tokens.update(newToken)
+            if (userMaySetTokenPicture(token, username)) {
+              val newToken = token.copy(picurl = picurl)
 
-                Comet.tokenChatRoom(id).reportTokenUpdate(new TokenUpdate(tokens.get(id)))
+              Logger.info("token has got a new picture")
+              tokens.update(newToken)
 
-                jsonOk()
+              Comet.tokenChatRoom(id).reportTokenUpdate(new TokenUpdate(tokens.get(id)))
+            }
+
+          }
+
+          val tokenUsers = (json \ "users").as[Array[JsObject]] //Map[String, JsObject]]]
+
+          // save user settings
+          if (userMaySetTokenUser(token, username)) {
+            Logger.info("user may set token user");
+
+            tokenUsers.forall((user => {
+
+              if ((!(user \ "added").isInstanceOf[JsUndefined]) && ( (user \ "removed").isInstanceOf[JsUndefined])) {
+                Logger.info("new token user " + user \ "id")
+                addUserToToken(token, (user \ "id").as[String])
+              } else if (((user \ "added").isInstanceOf[JsUndefined]) && ( !(user \ "removed").isInstanceOf[JsUndefined])) {
+                if (!username.equals((user \ "id").as[String]) ) {
+                  Logger.info("remove token user " + user \ "id")
+                  removeUserFromToken(token, (user \ "id").as[String])
+                }
               }
+              true;
+            }))
+          }
+
+
+
+
+
+
+          jsonOk()
 
       })
 

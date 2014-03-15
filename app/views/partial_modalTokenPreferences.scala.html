@@ -55,6 +55,10 @@
                 };
 
 
+                $scope.addUser = function () {
+                    $scope.preferences.users.push({"id" : $scope.newUser, "added" : true });
+                    $scope.newUser = "";
+                }
 
                 $scope.show = function (url) {
                     $scope.load(url);
@@ -148,8 +152,7 @@
                                             <div class="row">
                                                 <div class="col-xs-10">add user</div>
                                                 <div class="col-xs-2">
-                                                    <span class="fui-plus" ng-click="user.removed=true"
-                                                          style="position:absolute;right:20px;"></span>
+                                                    <span class="fui-plus" style="position:absolute;right:20px;"></span>
                                                 </div>
                                             </div>
 
@@ -161,14 +164,14 @@
                                                     <div class="input-group">
 
 
-                                                            <input class="form-control" ng-model="newUser" type="text"
+                                                            <input class="form-control" ng-model="newUser" type="email"
                                                                    placeholder="user email">
 
                                                             <div class="input-group-btn">
                                                                 <button ng-click="addUserDialog=false;"
                                                                         class="fui-cross btn btn-default"></button>
                                                                 <button ng-click="addUser(); addUserDialog=false;"
-                                                                        class="fui-plus btn btn-default"></button>
+                                                                        class="fui-plus btn btn-default" ng-disabled="!newUser"></button>
                                                             </div>
 
 
