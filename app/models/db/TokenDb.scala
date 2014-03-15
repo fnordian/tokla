@@ -21,6 +21,7 @@ object TokenDb extends Schema {
   val tokens = table[Token]
   val applicants = table[TokenApplicant]
   val users = table[User]
+  val teams = table[Team]
   val userReferences = table[TokenUserReference]
   val userPremiumPayments = table[PremiumPayments]
   val paymentAddress = table[PaymentAddress]
@@ -29,4 +30,5 @@ object TokenDb extends Schema {
   val tokenToApplicants = oneToManyRelation(tokens, applicants).via((t, a) => t.id === a.tokenId)
   val applicantToUser = oneToManyRelation(users, applicants).via((u, a) => u.id === a.applicantName)
   val userPaymentAddress = oneToManyRelation(users, paymentAddress).via((u, p) => u.id === p.username)
+  val tokenTeams = oneToManyRelation(tokens, teams).via((token, team) => token.id === team.token)
 }

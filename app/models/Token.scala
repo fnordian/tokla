@@ -13,6 +13,7 @@ case class Token (override val id: String = java.util.UUID.randomUUID.toString, 
   }
   lazy val user: OneToMany[User] = db.TokenDb.claimerToTokens.left(this)
   lazy val associatedUsers: ManyToMany[User, TokenUserReference] = db.TokenDb.tokenToUsers.left(this)
+  lazy val teams: OneToMany[Team] = db.TokenDb.tokenTeams.left(this)
 }
 
 case class TokenApplicant (override val id: String = java.util.UUID.randomUUID().toString, tokenId: String, enqueueTime: Long = 0, applicantName: String) extends DbEntity {

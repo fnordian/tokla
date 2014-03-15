@@ -6,10 +6,17 @@ import org.squeryl.PrimitiveTypeMode
 import play.api.libs.json._
 import play.api.Logger
 import models.chat._
-import models.TokenApplicant
+import models.{Token, TokenApplicant, TokenUserReference}
 import controllers.mail.MailNotification
 import play.api.libs.json.JsString
 import play.api.libs.json.JsBoolean
+import play.api.libs.json.JsNumber
+import play.api.libs.json.JsObject
+import models.db.TokenDb._
+import play.api.libs.json.JsArray
+import play.api.libs.json.JsString
+import play.api.libs.json.JsBoolean
+import models.Token
 import play.api.libs.json.JsNumber
 import models.TokenApplicant
 import models.TokenUserReference
@@ -237,6 +244,10 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
               "users" -> JsArray(token.associatedUsers.map((u: models.User) =>
                 JsObject(Seq(
                   "id" -> JsString(u.id)).toSeq)
+              ).toSeq),
+              "teams" -> JsArray(token.teams.map((team: models.Team) =>
+                JsObject(Seq(
+                  "name" -> JsString(team.name)).toSeq)
               ).toSeq)
             ))))
           )
@@ -268,6 +279,25 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
 
     val tokenUserRereference = TokenUserReference(token.id, username)
     userReferences.insert(tokenUserRereference)
+  }
+
+  def addTeamToToken(token: Token, teamName: String) {
+    import schema._
+
+
+    val thisTokensTeams = tokenTeams.left(token)
+
+    if (!thisTokensTeams.exists((team) => team.name.equals(teamName))) {
+      val newTeam = new models.Team(token = token.id, name = teamName)
+      teams.insert(newTeam)
+    }
+  }
+
+  def removeTeamFromToken(token: Token, teamName: String) {
+    val thisTokensTeams = tokenTeams.left(token)
+    import PrimitiveTypeMode._
+
+    thisTokensTeams.filter((team) => team.name.equals(teamName)).foreach((team) => teams.delete(team.id))
   }
 
   def setTokenPreferences(id: String) = IsAuthenticated {
@@ -303,7 +333,8 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
 
           }
 
-          val tokenUsers = (json \ "users").as[Array[JsObject]] //Map[String, JsObject]]]
+          val tokenUsers = (json \ "users").as[Array[JsObject]]
+          val tokenTeams = (json \ "teams").as[Array[JsObject]]
 
           // save user settings
           if (userMaySetTokenUser(token, username)) {
@@ -322,7 +353,17 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
               }
               true;
             }))
+
+            tokenTeams.forall((team => {
+              if ((!(team \ "added").isInstanceOf[JsUndefined]) && ( (team \ "removed").isInstanceOf[JsUndefined])) {
+                addTeamToToken(token, (team \ "name").as[String])
+              } else if (((team \ "added").isInstanceOf[JsUndefined]) && ( !(team \ "removed").isInstanceOf[JsUndefined])) {
+                removeTeamFromToken(token, (team \ "name").as[String])
+              }
+              true
+            }))
           }
+
 
 
 
