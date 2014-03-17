@@ -250,11 +250,14 @@ trait DbHelper extends Controller {
     val session = SessionFactory.newSession
     session.bindToCurrentThread
 
-    val result = f(session)
+    transaction {
+      val result = f(session)
 
-    session.close
+      session.close
 
-    result
+
+      result
+    }
 
 
   }

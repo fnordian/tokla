@@ -1,7 +1,9 @@
 package models
 
-import models.db.DbEntity
 
-case class TeamMembership(override val id: String = java.util.UUID.randomUUID.toString, val user: String) extends DbEntity {
+import org.squeryl.KeyedEntity
+import org.squeryl.dsl.CompositeKey2
 
+case class TeamMembership(val user: String, val team: String)  extends KeyedEntity[CompositeKey2[String, String]] {
+  def id = CompositeKey2(user, team)
 }

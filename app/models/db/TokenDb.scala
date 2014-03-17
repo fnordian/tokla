@@ -14,6 +14,7 @@ object TokenDb extends Schema {
 
   def tokenToUsers = manyToManyRelation(tokens, users).via((t: Token, u: User, a: TokenUserReference) => (u.id === a.userName, t.id === a.tokenId))
   def userToTokens = manyToManyRelation(users, tokens).via((u: User, t: Token, a: TokenUserReference) => (u.id === a.userName, t.id === a.tokenId))
+  def userToTeams = manyToManyRelation(users, teams).via((u: User, t: Team, a: TeamMembership) => (u.id === a.user, t.id === a.team))
 
 
   def claimerToTokens = oneToManyRelation(tokens, users ).via((t, u) => u.id === t.claimedBy)
@@ -25,6 +26,7 @@ object TokenDb extends Schema {
   val userReferences = table[TokenUserReference]
   val userPremiumPayments = table[PremiumPayments]
   val paymentAddress = table[PaymentAddress]
+  val teamMembership = table[TeamMembership]
   
 
   val tokenToApplicants = oneToManyRelation(tokens, applicants).via((t, a) => t.id === a.tokenId)

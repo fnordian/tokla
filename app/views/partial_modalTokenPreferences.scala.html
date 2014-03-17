@@ -64,6 +64,23 @@
                     $scope.newTeam = "";
                 }
 
+                $scope.teamExists = function (teamName) {
+                    var ret = false;
+                    $scope.preferences.teams.forEach( function(team) {
+                        if (teamName == team.name && ! team.removed) {
+                            ret = true;
+                        }
+                    });
+
+                    return ret;
+                }
+
+                $scope.teamExistsFilter = function () {
+                    return function(team) {
+                        return $scope.teamExists(team.name);
+                    }
+                }
+
                 $scope.show = function (url) {
                     $scope.load(url);
                     $scope.showDialog = 1;
@@ -85,27 +102,8 @@
                 $scope.foo = "";
 
 
-            },
-
-
-            link: function (scope, element, attrs) {
-                alert("element" + element);
-                attrs.$observe('preferencesGetUrl', function (preferencesGetUrl) {
-                    attrs.$observe('preferencesSetUrl', function (preferencesSetUrl) {
-                        element.on('click', function (event) {
-
-                            alert("click");
-
-                            if (event.target.parentElement.id == "prefButton") {
-                                scope.preferencesSetUrl = preferencesSetUrl;
-                                scope.show(preferencesGetUrl);
-                            }
-                        });
-
-                    });
-                });
-
             }
+
         };
     });
 </script>
@@ -155,9 +153,9 @@
                                     <li>
                                         <div ng-hide="addUserDialog" ng-click="addUserDialog=true">
                                             <div class="row">
-                                                <div class="col-xs-10">add user</div>
-                                                <div class="col-xs-2">
-                                                    <span class="fui-plus" style="position:absolute;right:20px;"></span>
+                                                <div class="col-xs-11">add user</div>
+                                                <div class="col-xs-1">
+                                                    <span class="fui-plus"></span>
                                                 </div>
                                             </div>
 
@@ -187,10 +185,33 @@
                                     </li>
                                     <li class="divider"></li>
                                     <li ng-repeat="user in preferences.users | filter:{removed:'!'+true}">
-                                        {{user.id}}
-                                        <span class="fui-cross-inverted" ng-click="user.removed=true" style="position:absolute;right:20px;"> </span>
+                                        <div class="row">
+                                            <div class="col-xs-7">{{user.id}}</div>
+                                            <div class="col-xs-5">
+                                                <div class="btn-group pull-right">
+                                                    <button class="btn btn-sm">{{(user.team != undefined && user.team.name != undefined && teamExists(user.team.name)) | iif : user.team.name : "no team"}}</button>
+                                                    <button class="btn btn-sm dropdown-toggle" data-toggle="dropdown">
+                                                        <span class="caret"></span>
+                                                    </button>
+                                                    <span class="dropdown-arrow dropdown-arrow-inverse"></span>
+                                                    <ul class="dropdown-menu dropdown-inverse">
+                                                        <li>
+                                                            <a ng-click="user.removed=true">
+                                                                <span class="fui-cross-inverted"></span>
+                                                                remove user
+                                                            </a>
+                                                        </li>
+                                                        <li class="divider"></li>
+                                                        <li><a ng-click="user.team = { 'name': undefined, 'new': true }">no team</a></li>
+                                                        <li ng-repeat="team in preferences.teams | filter : teamExistsFilter()"><a ng-click="user.team = { 'name':  team.name, 'new': true }">{{team.name}}</a></li>
 
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div class="col-xs-1">
 
+                                            </div>
+                                        </div>
                                     </li>
                                 </ul>
                             </div>
@@ -199,13 +220,11 @@
                                     <li>
                                         <div ng-hide="addTeamDialog" ng-click="addTeamDialog=true">
                                             <div class="row">
-                                                <div class="col-xs-10">add team</div>
-                                                <div class="col-xs-2">
-                                                    <span class="fui-plus" style="position:absolute;right:20px;"></span>
+                                                <div class="col-xs-11">add team</div>
+                                                <div class="col-xs-1">
+                                                    <span class="fui-plus"></span>
                                                 </div>
                                             </div>
-
-
                                         </div>
                                         <div ng-show="addTeamDialog">
                                             <div class="row">
@@ -222,8 +241,6 @@
                                                             <button ng-click="addTeam(); addTeamDialog=false;"
                                                                     class="fui-plus btn btn-default" ng-disabled="!newTeam"></button>
                                                         </div>
-
-
                                                     </div>
                                                 </div>
                                             </div>
@@ -231,10 +248,12 @@
                                     </li>
                                     <li class="divider"></li>
                                     <li ng-repeat="team in preferences.teams | filter:{removed:'!'+true}">
-                                        {{team.name}}
-                                        <span class="fui-cross-inverted" ng-click="team.removed=true" style="position:absolute;right:20px;"> </span>
-
-
+                                        <div class="row">
+                                            <div class="col-xs-11">{{team.name}}</div>
+                                            <div class="col-xs-1">
+                                                <span class="fui-cross-inverted" ng-click="team.removed=true"></span>
+                                            </div>
+                                        </div>
                                     </li>
                                 </ul>
                             </div>

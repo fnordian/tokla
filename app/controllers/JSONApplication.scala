@@ -6,13 +6,18 @@ import org.squeryl.PrimitiveTypeMode
 import play.api.libs.json._
 import play.api.Logger
 import models.chat._
-import models.{Token, TokenApplicant, TokenUserReference}
+import models._
 import controllers.mail.MailNotification
 import play.api.libs.json.JsString
 import play.api.libs.json.JsBoolean
 import play.api.libs.json.JsNumber
 import play.api.libs.json.JsObject
 import models.db.TokenDb._
+import play.api.libs.json.JsArray
+import play.api.libs.json.JsString
+import play.api.libs.json.JsBoolean
+import play.api.libs.json.JsNumber
+import play.api.libs.json.JsObject
 import play.api.libs.json.JsArray
 import play.api.libs.json.JsString
 import play.api.libs.json.JsBoolean
@@ -243,7 +248,32 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
               "picurl" -> JsString(token.picurl),
               "users" -> JsArray(token.associatedUsers.map((u: models.User) =>
                 JsObject(Seq(
-                  "id" -> JsString(u.id)).toSeq)
+                  "id" -> JsString(u.id),
+                  "team" -> JsObject(Seq(
+                    "name" -> JsString({
+
+                      Logger.info("getting teams for user " + u.id)
+
+                      val teams = userToTeams.left(u).filter((t: Team) => {
+                        Logger.info("checking if " + u.id + " is in " + t.name)
+                        var ret = false;
+                        token.teams.foreach((tokenTeam: Team) => {
+                          Logger.info("comparing " + tokenTeam.name + " with " + t.name)
+                          if (tokenTeam.name.equals(t.name)) {
+                            ret = true
+                          }
+                        });
+                        ret;
+                      })
+
+                      if (teams.isEmpty) {
+                        null
+                      } else {
+                        teams.head.name
+                      }
+
+                    })).toSeq)
+                ).toSeq)
               ).toSeq),
               "teams" -> JsArray(token.teams.map((team: models.Team) =>
                 JsObject(Seq(
@@ -297,7 +327,41 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
     val thisTokensTeams = tokenTeams.left(token)
     import PrimitiveTypeMode._
 
-    thisTokensTeams.filter((team) => team.name.equals(teamName)).foreach((team) => teams.delete(team.id))
+    thisTokensTeams.filter((team) => team.name.equals(teamName)).foreach((team) => {
+      team.members.foreach((member) => {
+        val membership = new TeamMembership(user = member.id, team = team.id);
+        teamMembership.delete(membership.id)
+      })
+      teams.delete(team.id)
+    })
+  }
+
+  def clearUserTokenTeam(token: Token, username: String) {
+    import PrimitiveTypeMode._
+
+    val thisTokensTeams = tokenTeams.left(token)
+
+    thisTokensTeams.foreach((team) => {
+      team.members.find((u: User) => u.id.equals(username)).foreach((u: User) => {
+        val membership = new TeamMembership(user = username, team = team.id);
+        teamMembership.delete(membership.id)
+      })
+    })
+  }
+
+  def addUserToTokenTeam(token: Token, username: String, teamName: String) {
+    val thisTokensTeams = tokenTeams.left(token)
+
+    import PrimitiveTypeMode._
+
+    Logger.info("about to add " + username + " to " + teamName);
+
+    thisTokensTeams.filter((team) => team.name.equals(teamName)).foreach((team) => {
+      if (!team.members.exists((u: User) => u.id.equals(username))) {
+        val membership = new TeamMembership(user = username, team = team.id);
+        teamMembership.insert(membership)
+      }
+    })
   }
 
   def setTokenPreferences(id: String) = IsAuthenticated {
@@ -340,7 +404,7 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
           if (userMaySetTokenUser(token, username)) {
             Logger.info("user may set token user");
 
-            tokenUsers.forall((user => {
+            tokenUsers.forall((user) => {
 
               if ((!(user \ "added").isInstanceOf[JsUndefined]) && ( (user \ "removed").isInstanceOf[JsUndefined])) {
                 Logger.info("new token user " + user \ "id")
@@ -351,28 +415,51 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
                   removeUserFromToken(token, (user \ "id").as[String])
                 }
               }
-              true;
-            }))
 
-            tokenTeams.forall((team => {
-              if ((!(team \ "added").isInstanceOf[JsUndefined]) && ( (team \ "removed").isInstanceOf[JsUndefined])) {
-                addTeamToToken(token, (team \ "name").as[String])
-              } else if (((team \ "added").isInstanceOf[JsUndefined]) && ( !(team \ "removed").isInstanceOf[JsUndefined])) {
+
+
+
+              uniqueTeams(tokenTeams.toList).forall((team) => {
+                if ((!(team \ "added").isInstanceOf[JsUndefined]) && ( (team \ "removed").isInstanceOf[JsUndefined])) {
+                  addTeamToToken(token, (team \ "name").as[String])
+                }
+                true
+              })
+
+              val team = user \ "team"
+              if ((team \ "name").isInstanceOf[JsUndefined]) {
+                if (!(team \ "new").isInstanceOf[JsUndefined]) {
+                  clearUserTokenTeam(token, (user \ "id").as[String])
+                }
+              } else {
+                if (!(team \ "new").isInstanceOf[JsUndefined]) {
+                  clearUserTokenTeam(token, (user \ "id").as[String])
+                  addUserToTokenTeam(token, (user \ "id").as[String], (team \ "name").as[String])
+                }
+              }
+              true;
+            })
+
+            uniqueTeams(tokenTeams.toList).forall((team) => {
+              if (((team \ "added").isInstanceOf[JsUndefined]) && ( !(team \ "removed").isInstanceOf[JsUndefined])) {
                 removeTeamFromToken(token, (team \ "name").as[String])
               }
               true
-            }))
+            })
           }
-
-
-
-
-
-
 
           jsonOk()
 
       })
 
+  }
+
+  def uniqueTeams(ls: List[JsObject]) = {
+    def loop(map: Map[String, JsObject], ls: List[JsObject]): List[JsObject] = ls match {
+      case hd :: tail => hd :: loop(map + ((hd \ "name").as[String] -> hd), tail)
+      case Nil => Nil
+    }
+
+    loop(Map(), ls).toSeq
   }
 }

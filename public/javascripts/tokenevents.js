@@ -1,6 +1,12 @@
 var app = angular.module('token', ['ngResource']);
 
 
+app.filter('iif', function () {
+    return function(input, trueValue, falseValue) {
+        return input ? trueValue : falseValue;
+    };
+});
+
 app.factory('myService', function($http) {
     var myService = {
         async: function(url) {
