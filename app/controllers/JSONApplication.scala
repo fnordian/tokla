@@ -30,6 +30,22 @@ import play.api.libs.json.JsObject
 object JSONApplication extends Controller with LoggedIn with DbHelper {
   val schema = TokenDb
 
+  def tokenClaimerTeam(token: Token): JsValue = {
+    val teams = token.teams
+
+    teams.find((team) => {
+      team.members.exists((user: User) => user.id.equals(token.claimedBy))
+    }) match {
+      case None => JsNull
+      case team: Option[Team] => JsObject(Seq(
+        "name" -> JsString(team.get.name),
+        "members" -> JsArray(
+          team.get.members.map((user: User) => JsString(user.id)).toSeq
+        )
+      ))
+    }
+  }
+
   def showToken(id: String) = Action {
     implicit request =>
       withDbSession({
@@ -39,13 +55,15 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
 
           val token = tokens.get(id)
 
+
           Ok(
 
             JsObject(Seq("success" -> JsBoolean(true), "token" -> JsObject(Seq(
 
               "id" -> JsString(token.id),
               "claimedBy" -> JsString(token.claimedBy),
-              "claimTime" -> JsNumber(token.claimTime)
+              "claimTime" -> JsNumber(token.claimTime),
+              "claimedByTeam" -> tokenClaimerTeam(token)
             ))
             )))
 
@@ -259,7 +277,7 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
                         var ret = false;
                         token.teams.foreach((tokenTeam: Team) => {
                           Logger.info("comparing " + tokenTeam.name + " with " + t.name)
-                          if (tokenTeam.name.equals(t.name)) {
+                          if (tokenTeam.id.equals(t.id)) {
                             ret = true
                           }
                         });
@@ -406,11 +424,11 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
 
             tokenUsers.forall((user) => {
 
-              if ((!(user \ "added").isInstanceOf[JsUndefined]) && ( (user \ "removed").isInstanceOf[JsUndefined])) {
+              if ((!(user \ "added").isInstanceOf[JsUndefined]) && ((user \ "removed").isInstanceOf[JsUndefined])) {
                 Logger.info("new token user " + user \ "id")
                 addUserToToken(token, (user \ "id").as[String])
-              } else if (((user \ "added").isInstanceOf[JsUndefined]) && ( !(user \ "removed").isInstanceOf[JsUndefined])) {
-                if (!username.equals((user \ "id").as[String]) ) {
+              } else if (((user \ "added").isInstanceOf[JsUndefined]) && (!(user \ "removed").isInstanceOf[JsUndefined])) {
+                if (!username.equals((user \ "id").as[String])) {
                   Logger.info("remove token user " + user \ "id")
                   removeUserFromToken(token, (user \ "id").as[String])
                 }
@@ -420,7 +438,7 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
 
 
               uniqueTeams(tokenTeams.toList).forall((team) => {
-                if ((!(team \ "added").isInstanceOf[JsUndefined]) && ( (team \ "removed").isInstanceOf[JsUndefined])) {
+                if ((!(team \ "added").isInstanceOf[JsUndefined]) && ((team \ "removed").isInstanceOf[JsUndefined])) {
                   addTeamToToken(token, (team \ "name").as[String])
                 }
                 true
@@ -441,7 +459,7 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
             })
 
             uniqueTeams(tokenTeams.toList).forall((team) => {
-              if (((team \ "added").isInstanceOf[JsUndefined]) && ( !(team \ "removed").isInstanceOf[JsUndefined])) {
+              if (((team \ "added").isInstanceOf[JsUndefined]) && (!(team \ "removed").isInstanceOf[JsUndefined])) {
                 removeTeamFromToken(token, (team \ "name").as[String])
               }
               true
