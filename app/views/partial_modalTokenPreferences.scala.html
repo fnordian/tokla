@@ -94,7 +94,7 @@
 //alert("prefGetUrl: " + prefGetUrl);
 
                     $http.get(url).then(function (preferencesResponse) {
-                        $scope.preferences = preferencesResponse.data.preferences;
+                        $scope.preferences = $scope.preferencesCopy = preferencesResponse.data.preferences;
                     });
                 }
 
