@@ -30,12 +30,9 @@ import play.api.libs.json.JsObject
 object JSONApplication extends Controller with LoggedIn with DbHelper {
   val schema = TokenDb
 
-  def tokenClaimerTeam(token: Token): JsValue = {
-    val teams = token.teams
+  def tokenClaimerTeam(team: Option[Team]): JsValue = {
 
-    teams.find((team) => {
-      team.members.exists((user: User) => user.id.equals(token.claimedBy))
-    }) match {
+    team match {
       case None => JsNull
       case team: Option[Team] => JsObject(Seq(
         "name" -> JsString(team.get.name),
@@ -63,7 +60,7 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
               "id" -> JsString(token.id),
               "claimedBy" -> JsString(token.claimedBy),
               "claimTime" -> JsNumber(token.claimTime),
-              "claimedByTeam" -> tokenClaimerTeam(token)
+              "claimedByTeam" -> tokenClaimerTeam(token.claimedByTeam)
             ))
             )))
 
@@ -126,7 +123,7 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
 
           if ((token.claimedBy == null || token.claimedBy.isEmpty)) {
             jsonError("token not claimed")
-          } else if (!token.claimedBy.equals(username)) {
+          } else if (!token.claimedBy.equals(username) && !(token.claimedByTeam.isDefined && token.claimedByTeam.get.members.exists((user) => { user.id.equals(username) }))) {
             jsonError("token claimed by someone else")
           } else {
 

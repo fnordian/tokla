@@ -26,7 +26,23 @@ token.applicants= [
 ];
 token.picurl='@token.picurl';
 token.claimTime='@token.claimTime';
-token.remembered='@{token.associatedUsers.exists((u) => request.session.get("username").getOrElse("") == u.id)}'
+token.remembered='@{token.associatedUsers.exists((u) => request.session.get("username").getOrElse("") == u.id)}';
+
+
+@if(!token.claimedByTeam.equals(None)) {
+    token.claimedByTeam.name='@token.claimedByTeam.get.name';
+
+    token.claimedByTeam.members=[
+
+            @for((member, index) <- token.claimedByTeam.get.members.zipWithIndex) {
+                { 'id' : '@member.id' }
+                @if(index != token.claimedByTeam.get.members.size-1) {
+                    ,
+                }
+            }
+];
+}
+
 
 ">
 
@@ -34,7 +50,7 @@ token.remembered='@{token.associatedUsers.exists((u) => request.session.get("use
 <div class="col-md-4 no-padding-on-phone">
 
 
-    <div class="sidebar">
+    <div class="sidebar"  ng-controller="TokenChatCtrl">
         <!-- <div class="sidebar-top">
              bla bla
          </div>-->
@@ -49,20 +65,23 @@ token.remembered='@{token.associatedUsers.exists((u) => request.session.get("use
                 </div>
             </li>
 
-            <li class="sidebar-todo first-child sticky-on-phone" ng-hide="token.claimedBy != '@request.session.get("username").getOrElse("")'" onclick="releaseToken()" >
+            <li class="sidebar-todo first-child sticky-on-phone" ng-hide="!token.claimedBy || ( token.claimedBy != username  && !userIsMemberOfTeam(username, token.claimedByTeam))" onclick="releaseToken()" >
             <div class="sidebar-icon glyphicon glyphicon-record" style="min-height: 60px"></div>
             <div class="sidebar-content">
                 <h4 class="sidebar-name">
                     Release
                 </h4>
-                This token is claimed by you.
+                This token is claimed by <span ng-show="token.claimedBy == username">you</span><span ng-show="token.claimedBy != username">your team</span>.
             </div>
             </li>
+
+
 
             <li class="sidebar-todo first-child sticky-on-phone" ng-hide="
                             !token.claimedBy
                             || token.claimedBy == '@request.session.get("username").getOrElse("")'
-                            || token.applicants.indexOf(username) >= 0" onclick="enqueueForToken()" >
+                            || token.applicants.indexOf(username) >= 0
+                            || userIsMemberOfTeam(username, token.claimedByTeam)" onclick="enqueueForToken()" >
             <div class="sidebar-icon glyphicon glyphicon-eye-open" style="min-height: 60px"></div>
             <h4 class="sidebar-name">Enqueue</h4>
             This token is claimed by {{token.claimedBy}}
@@ -85,7 +104,7 @@ token.remembered='@{token.associatedUsers.exists((u) => request.session.get("use
                         Conversation
                     </h4>
 
-                    <div class="animate-hide coloredscrollbar some-right-padding-on-phone" ng-controller="TokenChatCtrl"
+                    <div class="animate-hide coloredscrollbar some-right-padding-on-phone"
                          ng-init="chat = {lines : [], tokenBaseUrl : '/tokenEvents/@token.id/' }" ng-hide="showChat==0"
                          style="margin-top: 10px; margin-right: -40px; padding-right:40px;">
                         <form onsubmit="sendChatLine(); return false;" class="form-inline">
@@ -100,11 +119,11 @@ token.remembered='@{token.associatedUsers.exists((u) => request.session.get("use
                                                 <td>
 
                                                     <div class="popover right"
-                                                         style="display:block;position: relative; max-width: 1000px;">
+                                                         style="display:block;position: relative; max-width: 1000px; padding-bottom: 8px">
                                                         <div class="arrow"></div>
                                                         <h3 class="popover-title"
                                                             style="word-wrap:break-word;word-break: break-all;">
-                                                            {{chatMessage.timeStamp | date:'yyyy-MM-dd HH:mm:ss Z'}} -
+                                                            {{chatMessage.timeStamp | date:'yyyy-MM-dd HH:mm:ss'}}<br>
                                                             {{chatMessage.sender}}</h3>
 
                                                         <div class="popover-content"
@@ -198,13 +217,13 @@ token.remembered='@{token.associatedUsers.exists((u) => request.session.get("use
 
         <h1>@token.name</h1>
 
-        <p ng-hide="!token.claimTime || !token.claimedBy">claimed since {{token.claimTime | date:'yyyy-MM-dd HH:mm:ss
-            Z'}}</p>
+
 
         <p ng-hide="token.claimedBy">not claimed at the moment</p>
+        <p ng-show="token.claimedBy">claimed by {{token.claimedBy}} <span ng-show="token.claimedByTeam">of team {{token.claimedByTeam.name}}</span> since {{token.claimTime | date:'yyyy-MM-dd HH:mm:ss'}}</p>
 
         <p ng-hide="token.applicants.length == 0">
-            {{token.applicants[0]}}
+            next in line: {{token.applicants[0]}}
         </p>
 
         <p ng-hide="token.applicants.length == 0">{{token.applicants.length}} waiting</p>

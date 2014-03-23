@@ -55,12 +55,28 @@ app.controller('TokenChatCtrl', function( myService,$scope, $timeout) {
         $scope.token.claimTime = tokenUpdate.claimTime;
         $scope.token.remembered = tokenUpdate.remembered;
         $scope.token.picurl = tokenUpdate.picurl;
+        $scope.token.claimedByTeam = tokenUpdate.claimedByTeam;
         if (lastMessageTimeStamp < tokenUpdate.timeStamp) {
             lastMessageTimeStamp = tokenUpdate.timeStamp;
             console.log("new timestamp " + lastMessageTimeStamp);
         }
 
-    }
+    };
+
+    $scope.userIsMemberOfTeam = function(username, team) {
+        var ret = false;
+
+        if (team && team.members) {
+
+            team.members.forEach(function(member) {
+               if (member.id == username) {
+                   ret = true;
+               }
+            });
+        }
+
+        return ret;
+    };
 
     $scope.$watch("chat.tokenBaseUrl", function(){
 

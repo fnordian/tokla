@@ -76,8 +76,12 @@ object Comet extends Controller with LoggedIn {
               "claimTime" -> JsNumber(tokenUpdate.claimTime),
               "timeStamp" -> JsNumber(tokenUpdate.timeStamp),
               "picurl" -> JsString(tokenUpdate.picurl),
-              "remembered" -> JsBoolean(tokenUpdate.associatedUsers.exists(u => u.id.equals(username)))
-            ))
+              "remembered" -> JsBoolean(tokenUpdate.associatedUsers.exists(u => u.id.equals(username))),
+              "claimedByTeam" -> JsObject(Seq(
+                "members" -> JsArray(
+                  tokenUpdate.claimedByTeamMembers.map((username) => JsObject(Seq("id" -> JsString(username))))),
+                "name" -> JsString(tokenUpdate.claimedByTeamName)
+              ))))
           case _ => JsNull
         }
       }
