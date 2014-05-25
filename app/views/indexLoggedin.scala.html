@@ -7,41 +7,31 @@
 
 @main("Welcome to tok.la", "home") {
 
-    <div class="page-header"></div>
-
-    <div class="jumbotron hide-on-phone">
-        <h1>Welcome!</h1>
-    </div>
-    <div class="row hide-on-phone">
-        <div class="col-md-12">
+<div class="page-header"></div>
 
 
-            <div class="panel panel-primary">
-                <div class="panel-heading">Using tok.la is super easy. If you are new, here is how it's done:
-                </div>
-                <div class="panel-body">
-                    <p><span class="fui-plus"> Start </span> with creating a token by clicking the link in the menu above.</p>
-                    <p><span class="fui-new"> Name it. </span> Any name you like is great. It should be descriptive for the resource you want to manage with the token.</p>
-                    <p><span class="fui-mail"> Share the link. </span> Your coworkers need to know the token's url. Send it to them.</p>
-                    <p><span class="fui-check"> That's it!</span></p>
-                </div>
-            </div>
+<div class="container dialog">
+    <div class="row">
+        <div class="col-lg-3"></div>
+        <div class="col-lg-6">
+
+
+            <h1>tok.la</h1>
+
         </div>
+        <div class="col-lg-3"></div>
     </div>
 
 
     <div class="row">
 
-        <div class="col-md-6">
+        <div class="col-lg-6">
             <div class="panel panel-primary">
                 <div class="panel-heading">My tok.la!</div>
                 <div class="panel-body">
-                    You are logged it as @request.session.get("username").getOrElse(""). Awesome!
+                    You are logged in as @request.session.get("username").getOrElse(""). Awesome!
                 </div>
             </div>
-        </div>
-
-        <div class="col-md-6">
             <div class="panel panel-primary">
                 <div class="panel-heading">Token overview</div>
                 <div class="panel-body">
@@ -69,11 +59,27 @@
                     </ul>
                 </div>
             </div>
+        </div>
+        <div class="col-lg-6">
+
+
+                <div class="panel panel-primary">
+                    <div class="panel-heading">New here and confused? These are your first steps:
+                    </div>
+                    <div class="panel-body">
+                        <p><span class="fui-plus"> Start </span> with creating a token by clicking the link in the menu above.</p>
+                        <p><span class="fui-new"> Name it. </span> Any name you like is great. It should be descriptive for the resource you want to manage with the token.</p>
+                        <p><span class="fui-mail"> Share the link. </span> Your coworkers need to know the token's url. Send it to them.</p>
+                        <p><span class="fui-check"> That's it!</span></p>
+                    </div>
+                </div>
+
 
         </div>
 
 
 
     </div>
+</div>
 
 }

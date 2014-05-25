@@ -12,11 +12,13 @@ libraryDependencies ++= Seq(
   "cglib" % "cglib" % "3.0",
   "de.bripkens" % "gravatar4java" % "1.1",
   "org.scala-lang" % "scala-actors" % "2.10.0",
-  "org.megaevil" % "dogeapi" % "0.1-SNAPSHOT"
+  "org.megaevil" % "dogeapi" % "0.1-SNAPSHOT",
+  "com.typesafe.slick" %% "slick" % "2.0.2",
+  "com.yammer.metrics" % "metrics-core" % "2.1.2"
 )     
 
 play.Project.playScalaSettings
 
-scalaVersion := "2.10.1"
+scalaVersion := "2.10.3"
 
 scalacOptions ++= Seq("-Xmax-classfile-name", "128")

@@ -7,28 +7,36 @@
 
 <div class="page-header"></div>
 
-<div class="jumbotron hide-on-phone">
-    <h1>Who are you?</h1>
-</div>
+<div class="container dialog">
+    <div class="row">
+        <div class="col-lg-3"></div>
+        <div class="col-lg-6">
 
-@flashmessage()
+            <h1>Who are you?</h1>
 
-<div>
+            @flashmessage()
 
-    <div class="panel panel-primary">
-        <div class="panel-heading">Login to tok.la!</div>
-        <div class="panel-body">
+            <div>
 
-            <p>
-                tok.la uses google login for authenticating users. It's easier for us and definitely easier for you.
-                Click the "Sign in with google"-button, authenticate with google and your back in a second.
-            </p>
+                <div class="panel panel-primary">
+                    <div class="panel-heading">Login to tok.la!</div>
+                    <div class="panel-body">
 
-            <a class="btn-auth btn-google large" href="@routes.Login.loginWithGoogle">
-                Sign in with <b>google</b>
-            </a>
+                        <p>
+                            tok.la uses google login for authenticating users. It's easier for us and definitely easier
+                            for you.
+                            Click the "Sign in with google"-button, authenticate with google and your back in a second.
+                        </p>
+
+                        <a class="btn-auth btn-google large" href="@routes.Login.loginWithGoogle">
+                            Sign in with <b>google</b>
+                        </a>
 
 
+                    </div>
+
+                </div>
+            </div>
         </div>
     </div>
 </div>

@@ -2,27 +2,31 @@
 
 @main("Welcome to tok.la", "home") {
 
-    <div class="page-header"></div>
-
-    <div class="jumbotron">
-
-        <h1>Manage a shared resource between multiple parties?</h1>
+<div class="page-header"></div>
 
 
-        <p>
-            Then this is for you!
-            It's one simple tool that helps you organizing.</p>
+<div class="container dialog">
+    <div class="row">
+        <div class="col-lg-3"></div>
+        <div class="col-lg-6">
 
-        <p>
-            <a class="btn btn-primary btn-lg" href="@routes.Login.login("/")">Log in</a>
-            <a class="btn btn-primary btn-lg" href="@routes.Application.createTokenForm">Create a token</a>
-        </p>
+
+            <h1>Manage a shared resource between multiple parties?</h1>
+
+
+            <p>
+                Then this is for you!
+                It's one simple tool that helps you organizing.</p>
+
+            <p>
+                <a class="btn btn-primary btn-lg" href="@routes.Login.login("/")">Log in</a>
+                <a class="btn btn-primary btn-lg" href="@routes.Application.createTokenForm">Create a token</a>
+            </p>
+
+        </div>
+        <div class="col-lg-3"></div>
 
     </div>
 
-
-
-    <div>
-
-    </div>
+</div>
 }

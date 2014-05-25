@@ -4,33 +4,39 @@
 
 @main("Create a new token", "createToken") {
 <div class="page-header"></div>
-<div class="jumbotron hide-on-phone">
-    <h1>Name your token...</h1>
-</div>
-<div class="row">
-    <div class="col-lg-12">
-
-        <div class="panel panel-primary">
-            <div class="panel-heading">Every token needs a name..</div>
-            <div class="panel-body">
 
 
-                <p>..even the one you are about to create. It should be descriptive for the resource you want to manage
-                    with the token.</p>
+<div class="container dialog">
+    <div class="row">
+        <div class="col-lg-3"></div>
+        <div class="col-lg-6">
 
-                @form(routes.Application.createToken) {
-                <div class="input-group">
 
-                    @inputText(tokenForm("name"), 'class -> "form-control")
-                        <span class="input-group-btn">
-                            <button class="btn btn-primary" type="submit" value="Create Token!">create new token!
-                            </button>
-                        </span>
+
+            <h1>Name your token...</h1>
+
+            <div class="panel panel-primary">
+                <div class="panel-heading">Every token needs a name..</div>
+                <div class="panel-body">
+
+
+                    <p>..even the one you are about to create. It should be descriptive for the resource you want to manage
+                        with the token.</p>
+
+                    @form(routes.Application.createToken) {
+
+
+                        @inputText(tokenForm("name"), 'class -> "form-control")
+
+                                <button class="btn btn-primary" type="submit" value="Create Token!">create new token!</button>
+
+
+                    }
+
                 </div>
-                }
             </div>
         </div>
-
+        <div class="col-lg-3"></div>
     </div>
 </div>
 

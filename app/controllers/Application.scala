@@ -2,19 +2,18 @@ package controllers
 
 import play.api._
 import play.api.mvc._
+import models._
+import models.db.TokenDb
+
 
 import play.api.data.Forms._
 import play.api.data.Form
-import models._
-import models.db.TokenDb
+
 import org.squeryl.{PrimitiveTypeMode, SessionFactory}
 import scala.Predef._
-import java.util
-import controllers.mail.MailNotification
 import PrimitiveTypeMode._
 import models.Token
 import models.TokenApplicant
-import models.TokenUserReference
 
 
 object Application extends Controller with LoggedIn with DbHelper {
@@ -35,6 +34,7 @@ object Application extends Controller with LoggedIn with DbHelper {
   val schema = TokenDb
 
   def index = IsAuthenticated({
+
     username => implicit request =>
       withDbSession({
         implicit session =>
@@ -73,6 +73,7 @@ object Application extends Controller with LoggedIn with DbHelper {
             implicit session =>
 
               val token = tokens.insert(Token(name = name, claimedBy = ""))
+
               Redirect(routes.Application.showToken(token.id))
           })
         }
@@ -86,8 +87,9 @@ object Application extends Controller with LoggedIn with DbHelper {
 
       Logger.info("show token " + id)
 
-
       withDbSession({
+
+
         implicit session =>
 
           val token = tokens.get(id)
@@ -218,7 +220,7 @@ object Application extends Controller with LoggedIn with DbHelper {
 
             val nextClaimer = if (applicants.size > 0) {
               schema.applicants.delete(applicants(0).id)
-              MailNotification.sendTokenNotification(token.copy(claimedBy = applicants(0).applicantName))
+              mail.MailNotification.sendTokenNotification(token.copy(claimedBy = applicants(0).applicantName))
               applicants(0).applicantName
 
             } else {
@@ -238,7 +240,6 @@ object Application extends Controller with LoggedIn with DbHelper {
       })
 
   }
-
 
 
 }
