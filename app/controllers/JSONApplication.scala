@@ -135,7 +135,7 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
               applicants(0).applicantName
 
             } else {
-              ""
+              null
             }
 
             val newToken = token.copy(claimedBy = nextClaimer)

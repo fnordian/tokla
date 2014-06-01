@@ -72,7 +72,7 @@ object Application extends Controller with LoggedIn with DbHelper {
           withDbSession({
             implicit session =>
 
-              val token = tokens.insert(Token(name = name, claimedBy = ""))
+              val token = tokens.insert(Token(name = name, claimedBy = null))
 
               Redirect(routes.Application.showToken(token.id))
           })

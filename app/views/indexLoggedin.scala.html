@@ -48,7 +48,7 @@
                             </div>
 
                             @token.name, claimed by
-                            @if(token.claimedBy.isEmpty) {
+                            @if(token.claimedBy==null || token.claimedBy.isEmpty) {
                             nobody
                             } else {
                             @token.claimedBy since @{new SimpleDateFormat().format(token.claimTime)}
