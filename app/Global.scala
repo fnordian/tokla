@@ -10,44 +10,29 @@ import play.api.db.DB
 import play.api.mvc.{Handler, RequestHeader}
 import scala.Some
 
+import play.api.Play.current
+
 object Global extends GlobalSettings {
 
-  def getSession (adapter: H2Adapter, application: Application) : Session = {
-    import play.api.Play.current
 
-    //Logger.info(DB.getDataSource().getConnection.toString)
 
-    //val session = new org.squeryl.Session(DB.getDataSource().getConnection(), adapter);
-    val session = try {
-      Session.create(DB.getDataSource().getConnection(), adapter);
-    } catch {
-      case e: SQLException => getSession(adapter, application)
-    }
-
-    session
+  override def onStart(app:Application):Unit =
+  {
+    SessionFactory.concreteFactory = Some(
+      () => Session.create(DB.getDataSource().getConnection(),
+        dbAdapter)
+    );
   }
 
-
-  override def onStart(app: Application) {
-
-
-    SessionFactory.concreteFactory = app.configuration.getString("db.default.driver") match {
-      case Some("org.h2.Driver") => Some(() => getSession(new H2Adapter, app))
-
-      case _ => sys.error("Database driver must be either org.h2.Driver")
-    }
-
-
-
-    Logger.info("Application has started")
-  }
-
+  val dbAdapter = new H2Adapter();
 
 
   override def onStop(app: Application) {
     Logger.info("Application shutdown...")
   }
 
+
+  /*
   override def onRouteRequest(request: RequestHeader): Option[Handler] = {
 
     val ret = super.onRouteRequest(request)
@@ -60,6 +45,6 @@ object Global extends GlobalSettings {
     ret
   }
 
-
+*/
 
 }

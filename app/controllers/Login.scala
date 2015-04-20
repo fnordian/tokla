@@ -152,8 +152,7 @@ import play.api.data.Form
       AsyncResult(
         OpenID.verifiedId
           .map(info =>
-          withDbSession({
-            implicit session =>
+          withDbSessionNew(() => {
 
               Logger.info("openid id " + info.id)
 

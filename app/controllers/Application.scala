@@ -36,8 +36,7 @@ object Application extends Controller with LoggedIn with DbHelper {
   def index = IsAuthenticated({
 
     username => implicit request =>
-      withDbSession({
-        implicit session =>
+      withDbSessionNew(() => {
           val user = TokenDb.users.lookup(username) match {
             case Some(user) => user
             case none => Login.ensureUserDbEntry(User(username))
@@ -69,9 +68,7 @@ object Application extends Controller with LoggedIn with DbHelper {
       tokenForm.bindFromRequest.fold(
         errors => BadRequest(views.html.createTokenForm(tokenForm)),
         name => {
-          withDbSession({
-            implicit session =>
-
+          withDbSessionNew(() => {
               val token = tokens.insert(Token(name = name, claimedBy = null))
 
               Redirect(routes.Application.showToken(token.id))
@@ -87,10 +84,7 @@ object Application extends Controller with LoggedIn with DbHelper {
 
       Logger.info("show token " + id)
 
-      withDbSession({
-
-
-        implicit session =>
+      withDbSessionNew(() => {
 
           val token = tokens.get(id)
 
@@ -108,8 +102,7 @@ object Application extends Controller with LoggedIn with DbHelper {
 
       Logger.info("deenqueuing token " + id + " username " + username)
 
-      withDbSession({
-        implicit session =>
+      withDbSessionNew(() => {
           val token = tokens.get(id)
 
 
@@ -130,8 +123,7 @@ object Application extends Controller with LoggedIn with DbHelper {
 
       Logger.info("enqueuing token " + id + " username " + username)
 
-      withDbSession({
-        implicit session =>
+      withDbSessionNew(() => {
           val token = tokens.get(id)
 
           val applicants = token.applicants
@@ -159,30 +151,29 @@ object Application extends Controller with LoggedIn with DbHelper {
 
       Logger.info("claiming token " + id + " username " + username)
 
-      withDbSession({
-        implicit session =>
+      withDbSessionNew(() => {
 
 
-          val token = tokens.get(id)
+        val token = tokens.get(id)
 
-          if (!(token.claimedBy == null || token.claimedBy.isEmpty)) {
+        if (!(token.claimedBy == null || token.claimedBy.isEmpty)) {
 
-            Redirect(routes.Application.showToken(id)).flashing("message" -> "token already claimed")
-          } else {
-
-
-            Logger.info("token is now claimed by " + username + " " + token.id)
-
-            val newToken = token.copy(claimedBy = username, claimTime = new java.util.Date().getTime)
-
-            Logger.info("claiming token " + newToken)
-
-            tokens.update(newToken)
-
-            Redirect(routes.Application.showToken(id))
+          Redirect(routes.Application.showToken(id)).flashing("message" -> "token already claimed")
+        } else {
 
 
-          }
+          Logger.info("token is now claimed by " + username + " " + token.id)
+
+          val newToken = token.copy(claimedBy = username, claimTime = new java.util.Date().getTime)
+
+          Logger.info("claiming token " + newToken)
+
+          tokens.update(newToken)
+
+          Redirect(routes.Application.showToken(id))
+
+
+        }
       })
 
   }
@@ -204,8 +195,7 @@ object Application extends Controller with LoggedIn with DbHelper {
 
       Logger.info("releasing token " + id + " username " + username)
 
-      withDbSession({
-        implicit session =>
+      withDbSessionNew(() => {
 
           val token = tokens.get(id)
 
@@ -249,12 +239,24 @@ trait DbHelper extends Controller {
   def withDbSession(f: => org.squeryl.Session => Result): Result = {
 
     val session = SessionFactory.newSession
-    session.bindToCurrentThread
+
 
     transaction {
       val result = f(session)
 
-      session.close
+
+      result
+    }
+
+
+  }
+
+  def withDbSessionNew(f: => () => Result): Result = {
+
+    println("foo")
+
+    inTransaction {
+      val result = f()
 
 
       result

@@ -12,12 +12,12 @@ import models.TokenUserReference
 
 object TokenDb extends Schema {
 
-  def tokenToUsers = manyToManyRelation(tokens, users).via((t: Token, u: User, a: TokenUserReference) => (u.id === a.userName, t.id === a.tokenId))
-  def userToTokens = manyToManyRelation(users, tokens).via((u: User, t: Token, a: TokenUserReference) => (u.id === a.userName, t.id === a.tokenId))
-  def userToTeams = manyToManyRelation(users, teams).via((u: User, t: Team, a: TeamMembership) => (u.id === a.user, t.id === a.team))
+  lazy val tokenToUsers = manyToManyRelation(tokens, users).via((t: Token, u: User, a: TokenUserReference) => (u.id === a.userName, t.id === a.tokenId))
+  lazy val userToTokens = manyToManyRelation(users, tokens).via((u: User, t: Token, a: TokenUserReference) => (u.id === a.userName, t.id === a.tokenId))
+  lazy val userToTeams = manyToManyRelation(users, teams).via((u: User, t: Team, a: TeamMembership) => (u.id === a.user, t.id === a.team))
 
 
-  def claimerToTokens = oneToManyRelation(tokens, users ).via((t, u) => u.id === t.claimedBy)
+  lazy val claimerToTokens = oneToManyRelation(tokens, users ).via((t, u) => u.id === t.claimedBy)
 
   val tokens = table[Token]
   val applicants = table[TokenApplicant]

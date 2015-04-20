@@ -45,8 +45,7 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
 
   def showToken(id: String) = Action {
     implicit request =>
-      withDbSession({
-        implicit session =>
+      withDbSessionNew(() => {
           import schema._
           import PrimitiveTypeMode._
 
@@ -84,8 +83,8 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
 
       Logger.info("claiming token " + id + " username " + username)
 
-      withDbSession({
-        implicit session =>
+      withDbSessionNew(() => {
+
 
 
           val token = tokens.get(id)
@@ -116,8 +115,7 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
 
       Logger.info("releasing token " + id + " username " + username)
 
-      withDbSession({
-        implicit session =>
+      withDbSessionNew(() => {
 
           val token = tokens.get(id)
 
@@ -160,8 +158,7 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
 
       Logger.info("deenqueuing token " + id + " username " + username)
 
-      withDbSession({
-        implicit session =>
+      withDbSessionNew(() => {
           val token = tokens.get(id)
 
 
@@ -183,8 +180,7 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
 
       Logger.info("enqueuing token " + id + " username " + username)
 
-      withDbSession({
-        implicit session =>
+      withDbSessionNew(() => {
           val token = tokens.get(id)
 
           val applicants = token.applicants
@@ -214,8 +210,7 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
 
       Logger.info("remembering token " + id + " username " + username)
 
-      withDbSession({
-        implicit session =>
+      withDbSessionNew(() => {
           val tokenUserRereference = TokenUserReference(id, username)
           userReferences.insertOrUpdate(tokenUserRereference)
 
@@ -232,8 +227,7 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
 
       Logger.info("forgetting token " + id + " username " + username)
 
-      withDbSession({
-        implicit session =>
+      withDbSessionNew(() => {
 
           val tokenUserRereference = TokenUserReference(id, username)
           Logger.info("forgetting token " + tokenUserRereference)
@@ -253,8 +247,7 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
     username => implicit request =>
       import schema._
       import PrimitiveTypeMode._
-      withDbSession({
-        implicit session =>
+      withDbSessionNew(() => {
           val token = tokens.get(id)
           Logger.info("number of associatedUsers: " + token.associatedUsers.size)
           Ok(
@@ -383,8 +376,7 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
     username => implicit request =>
       import schema._
       import PrimitiveTypeMode._
-      withDbSession({
-        implicit session =>
+      withDbSessionNew(() => {
           val token = tokens.get(id)
 
           val json = request.body.asJson.getOrElse(JsNull)
