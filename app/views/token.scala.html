@@ -47,7 +47,7 @@ token.remembered='@{token.associatedUsers.exists((u) => request.session.get("use
 ">
 
 
-<div class="col-md-4 no-padding-on-phone">
+<div class="col-md-6 no-padding-on-phone">
 
 
     <div class="sidebar"  ng-controller="TokenChatCtrl">
@@ -111,30 +111,17 @@ token.remembered='@{token.associatedUsers.exists((u) => request.session.get("use
                             <div id="chatMessageList">
                                 <ul class="chatList" scroll-if>
                                     <li style="margin-left:-22px" ng-repeat="chatMessage in chat.lines" scroll-item>
-                                        <table>
-                                            <tr>
-                                                <td>
-                                                    <img ng-src="{{chatMessage.avatar}}">
-                                                </td>
-                                                <td>
+                                        <div class="popover right" style="display:block;position: relative; max-width: 1000px; padding-bottom: 8px; margin-left: 0">
+                                            <div class="popover-title" style="padding:0">
+                                                <img height=50 style="margin-right: 5px; border-top-left-radius: 6px;" ng-src="{{chatMessage.avatar}}" title="{{chatMessage.sender}}">
+                                                {{chatMessage.timeStamp | date:'MMM dd, yyyy - HH:mm'}}
+                                            </div>
 
-                                                    <div class="popover right"
-                                                         style="display:block;position: relative; max-width: 1000px; padding-bottom: 8px">
-                                                        <div class="arrow"></div>
-                                                        <h3 class="popover-title"
-                                                            style="word-wrap:break-word;word-break: break-all;">
-                                                            {{chatMessage.timeStamp | date:'yyyy-MM-dd HH:mm:ss'}}<br>
-                                                            {{chatMessage.sender}}</h3>
-
-                                                        <div class="popover-content"
-                                                             style="word-wrap:break-word;word-break: break-all;">
-                                                            {{chatMessage.message}}
-                                                        </div>
-                                                    </div>
-
-                                                </td>
-                                            </tr>
-                                        </table>
+                                            <div class="popover-content"
+                                                 style="word-wrap:break-word;word-break: break-all;">
+                                                {{chatMessage.message}}
+                                            </div>
+                                        </div>
                                     </li>
                                 </ul>
                                 <div id="push"></div>
@@ -184,7 +171,7 @@ token.remembered='@{token.associatedUsers.exists((u) => request.session.get("use
 </div>
 
 
-<div class="col-md-8">
+<div class="col-md-6">
 
     <div class="well tokenView">
 
