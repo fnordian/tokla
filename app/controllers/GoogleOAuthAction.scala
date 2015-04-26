@@ -5,7 +5,7 @@ import play.api.mvc._
 import play.api.mvc.Results._
 import play.api.libs.json.Json
 import play.api.libs.ws.WS
-import com.ning.http.client.{AsyncHttpClientConfig, ProxyServer, AsyncHttpClient}
+import com.ning.http.client.{AsyncHttpClientConfig, AsyncHttpClient}
 
 import play.api.libs.openid.UserInfo
 
@@ -20,8 +20,7 @@ class GoogleOAuthAction(googleClientId: String, googleClientSecret: String, redi
   }
 
   def httpClient = {
-    val cf = new AsyncHttpClientConfig.Builder().setProxyServer(new
-        ProxyServer("localhost", 8080, "", "")).build();
+    val cf = new AsyncHttpClientConfig.Builder().build();
     new AsyncHttpClient(cf);
   }
 
