@@ -1,20 +1,21 @@
 package controllers
 
-import play.api._
-import play.api.mvc._
-import play.api.data._
-import play.api.data.Forms._
-import play.api.libs.openid._
-import play.api.libs.concurrent.{Redeemed, Thrown}
-import scala.concurrent.ExecutionContext
-import ExecutionContext.Implicits.global
-import models.db.TokenDb
 import models.User
-import org.squeryl.PrimitiveTypeMode
-import PrimitiveTypeMode._
+import models.db.TokenDb
+import org.squeryl.PrimitiveTypeMode._
+import play.api._
+import play.api.data.Forms._
+import play.api.data._
+import play.api.mvc._
+
+
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 
+
 trait LoggedIn extends Controller {
+
+
   def IsAuthenticated(f: => String => Request[AnyContent] => Result): Action[AnyContent] = {
 
     Action({
@@ -48,26 +49,27 @@ trait LoggedIn extends Controller {
   }
 
   def IsAuthenticatedAsync(f: => String => Request[AnyContent] => Future[SimpleResult], elseFun: => Request[AnyContent] => SimpleResult) =
-    Action.async( request => {
+    Action.async(request => {
 
-        val username: String = request.session.get("username").getOrElse("")
-        if (username.isEmpty) {
-          future {
-            elseFun(request)
-          }
-        } else {
-          Logger.info("Authorized access to " + request.uri + " , for user " + username)
-          f(username)(request)
+      val username: String = request.session.get("username").getOrElse("")
+      if (username.isEmpty) {
+        future {
+          elseFun(request)
         }
+      } else {
+        Logger.info("Authorized access to " + request.uri + " , for user " + username)
+        f(username)(request)
       }
+    }
     )
-
-
-
-
 }
 
 object Login extends Controller with DbHelper {
+
+  import play.api.Play.current
+
+  val googleClientId = Play.configuration.getString("google.clientId").get
+  val googleClientSecret = Play.configuration.getString("google.clientSecret").get
 
   val loginForm = Form(
     "url" -> nonEmptyText
@@ -87,50 +89,6 @@ object Login extends Controller with DbHelper {
       }
   }
 
-  def loginWithGoogle = Action {
-    implicit request =>
-      val openid = "https://www.google.com/accounts/o8/id";
-      AsyncResult(OpenID.redirectURL(openid, routes.Login.openIDCallback.absoluteURL(), Seq("email" -> "http://schema.openid.net/contact/email"))
-        .map(url => Redirect(url))
-        .recover {
-        case error => Redirect(routes.Login.login(""))
-      }).flashing("message" -> "welcome")
-
-  }
-
-import play.api.mvc._
-import play.api.libs.iteratee.{Enumeratee, Enumerator}
-import scala.concurrent._
-import ExecutionContext.Implicits.global
-import play.api.templates.Html
-import scala.actors._
-import scala.actors.Actor._
-import models.chat.{ChatMessage, ChatRoomListener, ChatRoom}
-import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap}
-import play.api.http.Writeable
-import play.api.data.Form
-
-
-
-
-  def loginPost = Action {
-    implicit request =>
-      Form(single(
-        "openid" -> nonEmptyText
-      )).bindFromRequest.fold(
-      error => {
-        Logger.info("bad request " + error.toString)
-        BadRequest(error.toString)
-      }, {
-        case (openid) => AsyncResult(OpenID.redirectURL(openid, routes.Login.openIDCallback.absoluteURL(), Seq("email" -> "http://schema.openid.net/contact/email"))
-          .map(url => Redirect(url))
-          .recover {
-          case error => Redirect(routes.Login.login(""))
-        })
-      }
-      )
-
-  }
 
   def ensureUserDbEntry(user: User) = {
     Logger.debug("ensureUserDbEntry " + user.id)
@@ -146,33 +104,27 @@ import play.api.data.Form
 
   }
 
-  def openIDCallback = Action {
-    implicit request =>
-      val url: String = request.cookies.get("postLoginUrl").getOrElse(Cookie(name = "", value = routes.Application.index.absoluteURL())).value
-      AsyncResult(
-        OpenID.verifiedId
-          .map(info =>
+  def newGoogleAction() = GoogleOAuthAction(googleClientId, googleClientSecret) {
+    implicit request => implicit userinfo =>
+      userinfo match {
+        case Some(userinfo) =>
           withDbSessionNew(() => {
 
-              Logger.info("openid id " + info.id)
+            val url: String = request.cookies.get("postLoginUrl").getOrElse(Cookie(name = "", value = routes.Application.index.absoluteURL())).value
+            Logger.info("openid id " + userinfo.id)
 
-              try {
-                ensureUserDbEntry(User(id = info.attributes.get("email").get, firstname = info.attributes.get("firstname").getOrElse(""), lastname = info.attributes.get("lastname").getOrElse("")))
-                Redirect(url).withSession("username" -> info.attributes.get("email").get)
+            try {
+              ensureUserDbEntry(User(id = userinfo.attributes.get("email").get, firstname = userinfo.attributes.get("given_name").getOrElse(""), lastname = userinfo.attributes.get("family_name").getOrElse("")))
+              Redirect(url).withSession("username" -> userinfo.attributes.get("email").get)
 
-              } catch {
-                case e: Exception => {
-                  Logger.error("Unauthorized access to " + request.uri + ": " + e)
-                  throw new Exception;
-                };
-              }
-          }))
-          .recover {
-          case t => {
-            // Here you should look at the error, and give feedback to the user
-            Redirect(routes.Login.login("")).flashing("message" -> "authentication error")
-          }
-        }
-      )
+            } catch {
+              case e: Exception => {
+                Logger.error("Unauthorized access to " + request.uri + ": " + e)
+                throw new Exception;
+              };
+            }
+          })
+        case _ => Redirect(routes.Login.login("")).flashing("message" -> "authentication error")
+      }
   }
 }
