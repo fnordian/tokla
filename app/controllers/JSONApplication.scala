@@ -59,7 +59,8 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
               "id" -> JsString(token.id),
               "claimedBy" -> JsString(token.claimedBy),
               "claimTime" -> JsNumber(token.claimTime),
-              "claimedByTeam" -> tokenClaimerTeam(token.claimedByTeam)
+              "claimedByTeam" -> tokenClaimerTeam(token.claimedByTeam),
+              "applicants" -> JsArray(token.sortedApplicants.map(applicant => JsString(applicant.applicantName)))
             ))
             )))
 
