@@ -251,17 +251,10 @@ trait DbHelper extends Controller {
 
   }
 
-  def withDbSessionNew(f: => () => Result): Result = {
-
-    println("foo")
+  def withDbSessionNew[A](f: => () => A): A = {
 
     inTransaction {
-      val result = f()
-
-
-      result
+      f()
     }
-
-
   }
 }

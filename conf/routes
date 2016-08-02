@@ -34,6 +34,8 @@ POST        /json/token/:id/forget      controllers.JSONApplication.forgetToken(
 GET         /json/token/:id/preferences controllers.JSONApplication.getTokenPreferences(id: String)
 POST        /json/token/:id/preferences controllers.JSONApplication.setTokenPreferences(id: String)
 
+POST        /api/token/:id/:apikey/claim controllers.ApiApplication.claimToken(id: String, apikey: String)
+POST        /api/token/:id/:apikey/release controllers.ApiApplication.releaseToken(id: String, apikey: String)
 
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file               controllers.Assets.at(path="/public", file)

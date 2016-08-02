@@ -128,6 +128,7 @@
                             <li ng-class="{active: tab=='users'}"><a href="#users" ng-click="tab='users'">Users</a></li>
                             <li ng-class="{active: tab=='teams'}"><a href="#teams" ng-click="tab='teams'">Teams</a></li>
                             <li ng-class="{active: tab=='settings'}"><a href="#settings" ng-click="tab='settings'">Settings</a></li>
+                            <li ng-class="{active: tab=='api'}"><a href="#api" ng-click="tab='api'">API</a></li>
                         </ul>
 
                         <div class="tab-content">
@@ -146,6 +147,14 @@
                             </div>
                             <div class="tab-pane" ng-class="{active: tab=='settings'}">
 
+                            </div>
+                            <div class="tab-pane" ng-class="{active: tab=='api'}">
+                                <p>
+                                Set an API key to active API.
+                                    <br>
+                                    <input type="text" ng-model="preferences.apikey" class="form-control"
+                                               id="apikeytext"/>
+                                </p>
                             </div>
                             <div class="tab-pane" ng-class="{active: tab=='users'}">
 

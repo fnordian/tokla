@@ -15,7 +15,7 @@ libraryDependencies ++= Seq(
   "org.megaevil" % "dogeapi" % "0.1-SNAPSHOT",
   "com.typesafe.slick" %% "slick" % "2.0.2",
   "com.yammer.metrics" % "metrics-core" % "2.1.2"
-)     
+)
 
 play.Project.playScalaSettings
 

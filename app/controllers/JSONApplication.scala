@@ -1,6 +1,6 @@
 package controllers
 
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{Action, Controller, Result}
 import models.db.TokenDb
 import org.squeryl.PrimitiveTypeMode
 import play.api.libs.json._
@@ -28,6 +28,8 @@ import models.TokenUserReference
 import play.api.libs.json.JsObject
 
 object JSONApplication extends Controller with LoggedIn with DbHelper {
+
+
   val schema = TokenDb
 
   def tokenClaimerTeam(team: Option[Team]): JsValue = {
@@ -84,72 +86,92 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
 
       Logger.info("claiming token " + id + " username " + username)
 
-      withDbSessionNew(() => {
+      if (claimTokenDb(id, username)) {
+        jsonOk()
+      } else {
+        jsonError("token already claimed")
+      }
+  }
 
 
 
-          val token = tokens.get(id)
+  def claimTokenDb(id: String, username: String) : Boolean = {
+    import schema._
+    import PrimitiveTypeMode._
 
-          if (!(token.claimedBy == null || token.claimedBy.isEmpty)) {
-            jsonError("token already claimed")
-          } else {
-            Logger.info("token is now claimed by " + username + " " + token.id)
+    inTransaction {
+      val token = tokens.get(id)
 
-            val newToken = token.copy(claimedBy = username, claimTime = new java.util.Date().getTime)
+      if (!(token.claimedBy == null || token.claimedBy.isEmpty)) {
+        false
+      } else {
+        Logger.info("token is now claimed by " + username + " " + token.id)
 
-            Logger.info("claiming token " + newToken)
+        val newToken = token.copy(claimedBy = username, claimTime = new java.util.Date().getTime)
 
-            tokens.update(newToken)
+        Logger.info("claiming token " + newToken)
 
-            Comet.tokenChatRoom(id).reportTokenUpdate(new TokenUpdate(newToken))
+        tokens.update(newToken)
 
-            jsonOk()
-          }
-      })
+        Comet.tokenChatRoom(id).reportTokenUpdate(new TokenUpdate(newToken))
 
+        true
+      }
+    }
   }
 
   def releaseToken(id: String) = IsAuthenticated {
     username => implicit request =>
-      import schema._
-      import PrimitiveTypeMode._
+      releaseTokenDb(id, username) match {
+        case 'NotClaimed => jsonError("token not claimed")
+        case 'ClaimedBySomeOneElse => jsonError("token claimed by someone else")
+        case 'Ok => jsonOk()
+      }
 
-      Logger.info("releasing token " + id + " username " + username)
+  }
 
-      withDbSessionNew(() => {
+  def releaseTokenDb(id: String, username: String): Symbol = {
 
-          val token = tokens.get(id)
+    import schema._
+    import PrimitiveTypeMode._
 
-          if ((token.claimedBy == null || token.claimedBy.isEmpty)) {
-            jsonError("token not claimed")
-          } else if (!token.claimedBy.equals(username) && !(token.claimedByTeam.isDefined && token.claimedByTeam.get.members.exists((user) => { user.id.equals(username) }))) {
-            jsonError("token claimed by someone else")
-          } else {
+    Logger.info("releasing token " + id + " username " + username)
 
-            val applicants = token.sortedApplicants
+    withDbSessionNew(() => {
 
-            val nextClaimer = if (applicants.size > 0) {
-              schema.applicants.delete(applicants(0).id)
-              MailNotification.sendTokenNotification(token.copy(claimedBy = applicants(0).applicantName))
-              applicants(0).applicantName
+      val token = tokens.get(id)
 
-            } else {
-              null
-            }
+      if ((token.claimedBy == null || token.claimedBy.isEmpty)) {
+        'NotClaimed
+      } else if (!token.claimedBy.equals(username) && !(token.claimedByTeam.isDefined && token.claimedByTeam.get.members.exists((user) => {
+        user.id.equals(username)
+      }))) {
+        'ClaimedBySomeOneElse
+      } else {
 
-            val newToken = token.copy(claimedBy = nextClaimer)
+        val applicants = token.sortedApplicants
 
-            Logger.info("token is now released")
+        val nextClaimer = if (applicants.size > 0) {
+          schema.applicants.delete(applicants(0).id)
+          MailNotification.sendTokenNotification(token.copy(claimedBy = applicants(0).applicantName))
+          applicants(0).applicantName
+
+        } else {
+          null
+        }
+
+        val newToken = token.copy(claimedBy = nextClaimer)
+
+        Logger.info("token is now released")
 
 
-            tokens.update(newToken)
+        tokens.update(newToken)
 
-            Comet.tokenChatRoom(id).reportTokenUpdate(new TokenUpdate(newToken))
-            jsonOk()
+        Comet.tokenChatRoom(id).reportTokenUpdate(new TokenUpdate(newToken))
+        'Ok
 
-          }
-      })
-
+      }
+    })
   }
 
   def deenqueueForToken(id: String) = IsAuthenticated {
@@ -255,6 +277,7 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
 
             JsObject(Seq("success" -> JsBoolean(true), "preferences" -> JsObject(Seq(
               "picurl" -> JsString(token.picurl),
+              "apikey" -> JsString(token.apikey),
               "users" -> JsArray(token.associatedUsers.map((u: models.User) =>
                 JsObject(Seq(
                   "id" -> JsString(u.id),
@@ -387,15 +410,16 @@ object JSONApplication extends Controller with LoggedIn with DbHelper {
           Logger.info("json pictureUrl: " + (json \ "pictureUrl"))
 
           val picurl = (json \ "picurl").as[String]
+          val apikey = (json \ "apikey").as[String]
 
           Logger.info("setting token picture " + id + " username " + username + " " + token.claimedBy + " " + token.claimedBy.equals(username))
 
           Logger.info("token about to get a new picture")
 
-          if (!picurl.equals(token.picurl)) {
+          if (!picurl.equals(token.picurl) || !apikey.equals(token.apikey)) {
 
             if (userMaySetTokenPicture(token, username)) {
-              val newToken = token.copy(picurl = picurl)
+              val newToken = token.copy(picurl = picurl, apikey = apikey)
 
               Logger.info("token has got a new picture")
               tokens.update(newToken)

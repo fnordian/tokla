@@ -4,7 +4,7 @@ import models.db.DbEntity
 import org.squeryl.dsl.{CompositeKey2, ManyToMany, OneToMany, ManyToOne}
 import org.squeryl.KeyedEntity
 
-case class Token(override val id: String = java.util.UUID.randomUUID.toString, name: String, claimedBy: String = "", claimTime: Long = 0, picurl: String = "") extends DbEntity {
+case class Token(override val id: String = java.util.UUID.randomUUID.toString, name: String, claimedBy: String = "", claimTime: Long = 0, picurl: String = "", apikey: String = "") extends DbEntity {
   lazy val applicants: OneToMany[TokenApplicant] = db.TokenDb.tokenToApplicants.left(this)
 
   def sortedApplicants: Array[TokenApplicant] = {

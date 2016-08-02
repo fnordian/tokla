@@ -177,12 +177,6 @@ token.remembered='@{token.associatedUsers.exists((u) => request.session.get("use
 
         <div class="iconbar" style="float: right">
             <ul>
-                <li>
-                    <a href="#fakelink" class="fui-heart remembered" ng-class="{'switch-on': token.remembered}"
-                       onclick="this.classList.contains('switch-on') ? forgetToken() : rememberToken()">
-                        <span class="iconbar-unread" ng-hide="token.remembered">!</span>
-                    </a>
-                </li>
 
                 <!-- token preferences button -->
 
