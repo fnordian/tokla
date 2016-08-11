@@ -110,12 +110,12 @@ object Login extends Controller with DbHelper {
         case Some(userinfo) =>
           withDbSessionNew(() => {
 
-            val url: String = request.cookies.get("postLoginUrl").getOrElse(Cookie(name = "", value = routes.Application.index.absoluteURL())).value
+            val url: String = routes.Application.index.url + request.cookies.get("postLoginUrl").getOrElse(Cookie(name = "", value = "")).value
             Logger.info("openid id " + userinfo.id)
 
             try {
               ensureUserDbEntry(User(id = userinfo.attributes.get("email").get, firstname = userinfo.attributes.get("given_name").getOrElse(""), lastname = userinfo.attributes.get("family_name").getOrElse("")))
-              Redirect(url).withSession("username" -> userinfo.attributes.get("email").get)
+              Redirect(url.replaceAll("//", "/")).withSession("username" -> userinfo.attributes.get("email").get)
 
             } catch {
               case e: Exception => {
