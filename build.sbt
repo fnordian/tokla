@@ -17,6 +17,10 @@ libraryDependencies ++= Seq(
   "com.yammer.metrics" % "metrics-core" % "2.1.2"
 )
 
+javaOptions in Universal ++= Seq(
+  "-Dpidfile.path=/dev/null"
+)
+
 play.Project.playScalaSettings
 
 scalaVersion := "2.10.3"
