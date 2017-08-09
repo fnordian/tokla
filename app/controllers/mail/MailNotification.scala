@@ -9,8 +9,9 @@ object MailNotification {
 
   def _mailSession = {
     // Set up the mail object
-    val username = "notification@heartofgold.de"
-    val password = "TobmechShiOlQuiofab0"
+
+    val username = Play.configuration.getString("gmail.username").get
+    val password = Play.configuration.getString("gmail.password").get
     val properties = System.getProperties
     properties.put("mail.smtp.host", "smtp.gmail.com")
     properties.put("mail.smtp.user", username);
