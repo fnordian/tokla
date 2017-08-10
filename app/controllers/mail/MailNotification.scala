@@ -8,6 +8,9 @@ import models.Token
 import play.api.Play
 import play.api.Play.current
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
 object MailNotification {
 
   def _mailSession = {
@@ -59,7 +62,9 @@ object MailNotification {
     message.setSubject(token.name + " is now claimed by you")
     message.setText("Hello,\nthe token " + token.name + " is now owned by you. Please release it when you don't need at anymore at http://tok.la/token/" + token.id + "\n\nCheers, tok.la\n")
 
-    // And send it
-    Transport.send(message)
+    Future {
+      // And send it
+      Transport.send(message)
+    }
   }
 }
