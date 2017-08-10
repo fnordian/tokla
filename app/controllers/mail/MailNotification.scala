@@ -6,6 +6,7 @@ import java.util.Properties._
 
 import models.Token
 import play.api.Play
+import play.api.Play.current
 
 object MailNotification {
 
